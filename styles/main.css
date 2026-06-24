@@ -7332,7 +7332,6 @@ body:has(#historico.active) .mob-tab[data-section="historico"] {
 .loja-item:hover {
   background: rgba(212,175,55,0.08);
   border-color: rgba(212,175,55,0.4);
-  transform: translateX(2px);
 }
 
 .loja-item:active {

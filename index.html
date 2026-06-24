@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Use Stylo">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Use Stylo - Sistema de Vendas</title>
+
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="icon" href="public/use-styloo-ico.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="public/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="public/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="public/icon-512.png">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="js/firebase.js"></script>
+</head>
+
+<body>
+
+  <!-- ══════════════ TELA DE LOGIN ══════════════ -->
+  <div id="authOverlay" class="auth-overlay auth-verificando">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <span class="auth-logo-text">Use Stylo</span>
+        <span class="auth-logo-sub">Sistema de Controle</span>
+      </div>
+
+      <div class="auth-loading-state">
+        <div class="auth-loading-spinner"></div>
+        <span class="auth-loading-txt">Verificando sessão...</span>
+      </div>
+
+      <div class="auth-shimmer-line"></div>
+
+      <div class="auth-field-group">
+        <label class="auth-label">E-mail</label>
+        <input
+          type="email"
+          id="authEmail"
+          class="auth-input"
+          placeholder="seu@email.com"
+          autocomplete="username"
+          spellcheck="false">
+      </div>
+
+      <div class="auth-field-group">
+        <label class="auth-label">Senha</label>
+        <div class="auth-senha-wrap">
+          <input
+            type="password"
+            id="authSenha"
+            class="auth-input"
+            placeholder="••••••••"
+            autocomplete="current-password">
+          <button class="auth-eye-btn" type="button" onclick="authToggleSenha(this)" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="authErro" class="auth-erro" style="display:none;"></div>
+
+      <button id="authBtnEntrar" class="auth-btn-entrar" onclick="authFazerLogin()">
+        Entrar
+      </button>
+
+      <p class="auth-hint">Use Stylo &copy; 2025 — Acesso restrito</p>
+    </div>
+  </div>
+
+  <!-- ══════════════ SELETOR DE LOJA (owner) ══════════════ -->
+  <div id="lojaOverlay" class="loja-overlay" style="display:none;">
+    <div class="loja-card">
+      <div class="loja-logo">
+        <span class="loja-logo-text">Use Stylo</span>
+        <span class="loja-logo-sub">Selecionar Loja</span>
+      </div>
+      <p id="lojaSaudacao" class="loja-saudacao"></p>
+      <p class="loja-instrucao">Escolha a loja que deseja gerenciar:</p>
+      <div id="lojaLista" class="loja-lista"></div>
+    </div>
+  </div>
+
+  <div id="syncStatus" class="sync-status"></div>
+
+  <div class="app-wrapper">
+
+    <div class="app-header">
+      <div class="app-brand">
+        <span class="brand-name">Use Stylo</span>
+        <span class="brand-divider"></span>
+        <span class="brand-sub">Sistema de Controle</span>
+      </div>
+      <!-- Badge do usuário autenticado -->
+      <div id="authUserBadge" class="auth-user-badge" style="display:none;">
+        <div class="auth-user-info">
+          <span id="authUserNome" class="auth-user-nome"></span>
+          <span id="authUserRole" class="auth-user-role"></span>
+        </div>
+        <button class="auth-logout-btn" onclick="authFazerLogout()" title="Sair do sistema">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sair
+        </button>
+      </div>
+    </div>
+
+    <nav class="app-top-nav">
+      <button onclick="mostrarAba('inicio')"    data-role="vendedor" id="navBtnInicio">Início</button>
+      <button onclick="mostrarAba('home')"      data-role="admin">Início</button>
+      <button onclick="mostrarAba('dashboard')" data-role="admin">Dashboard</button>
+      <button onclick="mostrarAba('estoque')">Estoque</button>
+      <button onclick="mostrarAba('vendas')">Registrar Venda</button>
+      <button onclick="mostrarAba('crediario')">Crediário</button>
+      <button onclick="mostrarAba('historico')" data-role="admin">Histórico de Vendas</button>
+      <button onclick="mostrarAba('despesas')" data-role="admin">Despesas</button>
+      <button onclick="mostrarAba('configuracoes')">Configurações</button>
+    </nav>
+
+    <!-- ======================== INÍCIO (vendedor/gerente) ======================== -->
+    <section id="inicio">
+      <div class="inicio-live-bar">
+        <span id="inicioDate" class="inicio-date"></span>
+        <span class="home-live-pulse"></span>
+        <span id="inicioClock" class="inicio-clock"></span>
+      </div>
+
+      <div class="inicio-greeting-wrap">
+        <div class="inicio-greeting" id="inicioGreeting">Olá!</div>
+        <div class="inicio-user-nome" id="inicioUserNome"></div>
+      </div>
+
+      <div class="inicio-stats-row">
+        <div class="inicio-stat-card">
+          <div class="inicio-stat-val" id="inicioVendasHoje">0</div>
+          <div class="inicio-stat-lbl">Vendas hoje</div>
+        </div>
+        <div class="inicio-stat-card inicio-stat-relogio">
+          <div class="inicio-relogio-val" id="inicioRelogioGrande">00:00:00</div>
+          <div class="inicio-stat-lbl" id="inicioRelogioData"></div>
+        </div>
+      </div>
+
+      <div class="inicio-acoes-titulo">Acesso Rápido</div>
+      <div class="inicio-acoes-grid">
+        <button class="inicio-acao-card" onclick="mostrarAba('vendas')">
+          <div class="inicio-acao-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          </div>
+          <div class="inicio-acao-nome">Registrar Venda</div>
+        </button>
+        <button class="inicio-acao-card" onclick="mostrarAba('estoque'); setTimeout(()=>abrirFormProduto(),300)">
+          <div class="inicio-acao-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="12 22.08 12 12"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg>
+          </div>
+          <div class="inicio-acao-nome">Adicionar ao Estoque</div>
+        </button>
+        <button class="inicio-acao-card" onclick="mostrarAba('crediario')">
+          <div class="inicio-acao-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </div>
+          <div class="inicio-acao-nome">Crediário</div>
+        </button>
+        <button class="inicio-acao-card" onclick="mostrarAba('estoque')">
+          <div class="inicio-acao-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </div>
+          <div class="inicio-acao-nome">Ver Estoque</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================== HOME ======================== -->
+    <section id="home">
+
+      <!-- Barra de data e relógio ao vivo -->
+      <div class="home-live-bar">
+        <span id="homeDate" class="home-date"></span>
+        <span class="home-live-pulse"></span>
+        <div class="home-live-right">
+          <span id="homeClock" class="home-clock"></span>
+          <button id="homeToggleVis" class="home-eye-btn" onclick="homeToggleVisibilidade()" title="Mostrar/ocultar valores">
+            <svg id="homeEyeIcon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dados financeiros (ocultáveis) -->
+      <div id="homeDataWrap">
+
+        <!-- Hero: faturamento de hoje -->
+        <div class="home-hero">
+          <div class="home-hero-eyebrow">HOJE</div>
+          <div class="home-hero-amount">
+            <span class="home-amount-prefix">R$</span>
+            <span id="homeAmount" class="home-amount-value">0,00</span>
+          </div>
+          <div class="home-hero-label">faturado hoje</div>
+        </div>
+
+        <!-- Barra de progresso da meta diária -->
+        <div class="home-progress-wrap">
+          <div class="home-progress-track">
+            <div id="homeProgressFill" class="home-progress-fill" style="width:0%"></div>
+          </div>
+          <div class="home-progress-info">
+            <span id="homeProgressPct" class="home-progress-pct">0,0%</span>
+            <span id="homeProgressMeta" class="home-progress-meta">Meta mensal: —</span>
+          </div>
+        </div>
+
+        <!-- Trio de métricas de apoio -->
+        <div class="home-stat-trio">
+          <div class="home-stat">
+            <span id="homeVendas" class="home-stat-val">0</span>
+            <span class="home-stat-label">vendas hoje</span>
+          </div>
+          <div class="home-stat-sep"></div>
+          <div class="home-stat">
+            <span id="homeLucro" class="home-stat-val">—</span>
+            <span class="home-stat-label">lucro hoje</span>
+          </div>
+        </div>
+
+        <!-- Formas de pagamento de hoje -->
+        <div class="home-formas-hoje" id="homeFormasHoje"></div>
+
+      </div>
+
+      <!-- Ação rápida -->
+      <div class="home-actions-grid">
+        <button class="home-action-card home-action-primary" onclick="mostrarAba('vendas')">
+          <span class="home-action-icon">⊕</span>
+          <div class="home-action-text">
+            <span class="home-action-name">Registrar Venda</span>
+            <span class="home-action-desc">Abrir o ponto de venda</span>
+          </div>
+        </button>
+        <button class="home-action-card" onclick="mostrarAba('estoque'); setTimeout(()=>abrirFormProduto(null),300)">
+          <span class="home-action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="12 22.08 12 12"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg>
+          </span>
+          <div class="home-action-text">
+            <span class="home-action-name">Adicionar Estoque</span>
+            <span class="home-action-desc">Cadastrar novo produto</span>
+          </div>
+        </button>
+        <button class="home-action-card" onclick="mostrarAba('crediario')">
+          <span class="home-action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </span>
+          <div class="home-action-text">
+            <span class="home-action-name">Crediário</span>
+            <span class="home-action-desc">Gerenciar cobranças</span>
+          </div>
+        </button>
+        <button class="home-action-card" onclick="mostrarAba('estoque')">
+          <span class="home-action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </span>
+          <div class="home-action-text">
+            <span class="home-action-name">Ver Estoque</span>
+            <span class="home-action-desc">Consultar produtos</span>
+          </div>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ======================== DASHBOARD ======================== -->
+    <section id="dashboard">
+      <div class="dash-header-row">
+        <div>
+          <h2>Dashboard Executivo</h2>
+          <span class="dash-subtitle">Visão geral em tempo real</span>
+        </div>
+        <button class="btn-ghost" onclick="atualizarDashboard()">↺ Atualizar</button>
+      </div>
+
+      <div id="dashAlertasBanner"></div>
+
+      <div class="dash-module-label">Faturamento</div>
+      <div class="dash-kpi-row" id="dashKpiFaturamento"></div>
+
+      <div class="dash-module-label">Lucro</div>
+      <div class="dash-kpi-row" id="dashKpiLucro"></div>
+
+      <div class="dash-kpi-row" id="dashKpiOp"></div>
+
+      <div id="dashMetas"></div>
+
+      <div class="dash-module-label">Métricas Financeiras</div>
+      <div class="dash-charts-grid">
+        <div class="dash-chart-panel">
+          <div class="dash-chart-header">
+            <span>Evolução de Vendas</span>
+            <div class="grafico-controls">
+              <button class="grafico-btn" id="dbtn24h" onclick="dashSetGrafico('24h')">24h</button>
+              <button class="grafico-btn" id="dbtn7d" onclick="dashSetGrafico('7d')">7 dias</button>
+              <button class="grafico-btn" id="dbtn30d" onclick="dashSetGrafico('30d')">30 dias</button>
+              <button class="grafico-btn ativo" id="dbtn12m" onclick="dashSetGrafico('12m')">12 meses</button>
+            </div>
+          </div>
+          <canvas id="dashChartLine" style="max-height:220px;"></canvas>
+        </div>
+        <div class="dash-chart-panel">
+          <div class="dash-chart-header"><span>Formas de Pagamento</span></div>
+          <canvas id="dashChartDonut" style="max-height:180px;"></canvas>
+          <div id="dashLegendaFormas"></div>
+        </div>
+      </div>
+
+      <div class="dash-chart-panel dash-chart-full">
+        <div class="dash-chart-header">
+          <span>Receita × Custo × Lucro</span>
+          <div class="grafico-controls">
+            <button class="grafico-btn ativo" id="dfbtnmes" onclick="dashSetFluxo('mes')">6 Meses</button>
+            <button class="grafico-btn" id="dfbtnsemana" onclick="dashSetFluxo('semana')">Semana</button>
+            <button class="grafico-btn" id="dfbtndias" onclick="dashSetFluxo('dias')">14 Dias</button>
+          </div>
+        </div>
+        <canvas id="dashChartFluxo" style="max-height:240px;"></canvas>
+      </div>
+
+      <div class="dash-module-label">Estoque Inteligente</div>
+      <div class="dash-kpi-row" id="dashKpiEstoque"></div>
+      <div class="dash-estoque-indicadores" id="dashEstoqueIndicadores"></div>
+      <div id="dashAlertasEstoque"></div>
+
+      <div class="dash-module-label">Rankings</div>
+      <div class="dash-rankings-grid">
+        <div class="dash-ranking-panel">
+          <div class="dash-chart-header">
+            <span>Top Produtos</span>
+            <div class="grafico-controls">
+              <button class="grafico-btn ativo" id="drbtnh" onclick="dashSetRanking('hoje')">Hoje</button>
+              <button class="grafico-btn" id="drbtnm" onclick="dashSetRanking('mes')">Mês</button>
+              <button class="grafico-btn" id="drbtnans" onclick="dashSetRanking('ano')">Ano</button>
+            </div>
+          </div>
+          <div id="dashRankingList"></div>
+        </div>
+        <div class="dash-ranking-panel">
+          <div class="dash-chart-header"><span>Top Clientes</span></div>
+          <div id="dashClientesList"></div>
+        </div>
+      </div>
+
+      <div class="dash-module-label">Análise de Performance</div>
+      <div class="dash-comparativos-grid" id="dashComparativos"></div>
+
+      <div class="dash-module-label">Previsões com IA <span class="dash-ia-badge">IA</span></div>
+      <div id="dashPrevisoes"></div>
+    </section>
+
+    <!-- ======================== ESTOQUE ======================== -->
+    <section id="estoque">
+      <div class="dash-header-row" style="margin-bottom:16px;">
+        <div>
+          <h2>Gestão de Estoque</h2>
+          <span class="dash-subtitle">Centro de inteligência operacional</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-ghost" onclick="atualizarTudoEstoque()" title="Atualizar">↺</button>
+          <button class="btn-primary" onclick="abrirFormProduto(null)">+ Novo Produto</button>
+        </div>
+      </div>
+
+      <div class="est-kpi-row" id="estKpiRow"></div>
+      <div class="est-status-row" id="estStatusRow"></div>
+      <div id="estAlertas"></div>
+
+      <div class="estoque-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <h3 style="margin:0;">Produtos</h3>
+          <span id="buscaContador" class="busca-contador"></span>
+        </div>
+        <div class="est-controles">
+          <div class="busca-wrapper" style="max-width:240px;">
+            <span class="busca-icon">&#128269;</span>
+            <input type="text" id="buscaProduto" class="busca-input" placeholder="Buscar produto..." oninput="atualizarTabelaEstoque()">
+          </div>
+          <select id="filtroEstStatus" class="est-filtro-select" onchange="atualizarTabelaEstoque()">
+            <option value="">Todos</option>
+            <option value="normal">Normal</option>
+            <option value="baixo">Baixo</option>
+            <option value="critico">Crítico</option>
+            <option value="falta">Em Falta</option>
+            <option value="parado">Sem Giro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="tabelaEstoque"></table>
+      </div>
+    </section>
+
+    <!-- ======================== VENDAS / PDV ======================== -->
+    <section id="vendas">
+      <div class="dash-header-row" style="margin-bottom:16px;">
+        <div>
+          <h2>Ponto de Venda</h2>
+          <span class="dash-subtitle">Registre vendas com velocidade profissional</span>
+        </div>
+      </div>
+
+      <div class="pdv-layout">
+
+        <!-- LEFT PANEL -->
+        <div class="pdv-left">
+
+          <!-- BUSCA PRINCIPAL -->
+          <div class="pdv-search-area">
+            <div class="pdv-search-bar">
+              <span class="pdv-search-icon">⌕</span>
+              <input
+                type="text"
+                id="pdvBusca"
+                class="pdv-search-input"
+                placeholder="Escaneie ou digite código, SKU ou nome do produto..."
+                autocomplete="off"
+                oninput="pdvOnInput()"
+                onkeydown="pdvKeyDown(event)">
+              <span class="pdv-search-hint">Enter ↵</span>
+              <button class="pdv-browse-btn" onclick="pdvToggleBrowse()" title="Ver todos os produtos" id="pdvBrowseBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="#D4AF37"><path d="M7 10l5 5 5-5z"/></svg>
+              </button>
+            </div>
+            <div id="pdvDropdown" class="pdv-dropdown" style="display:none;"></div>
+            <div id="pdvBrowsePanel" class="pdv-browse-panel" style="display:none;"></div>
+            <div id="pdvFeedback" class="pdv-feedback" style="display:none;"></div>
+          </div>
+
+          <!-- PRODUTO SELECIONADO + CONTROLES -->
+          <div id="pdvQuickAdd" class="pdv-quick-add" style="display:none;">
+            <div id="pdvProdInfo" class="pdv-prod-info"></div>
+            <div class="pdv-controls-row">
+              <div class="pdv-qty-group">
+                <button class="pdv-qty-btn" onclick="pdvQtyAdj(-1)">−</button>
+                <input type="number" id="pdvQtd" value="1" min="1" max="9999" class="pdv-qty-input" onchange="pdvValidarQtd()">
+                <button class="pdv-qty-btn" onclick="pdvQtyAdj(1)">+</button>
+              </div>
+              <div class="pdv-desc-group">
+                <label>Desc. %</label>
+                <input type="number" id="pdvDesconto" value="0" min="0" max="100" class="pdv-desc-input">
+              </div>
+              <button class="btn-primary pdv-add-btn" onclick="pdvAdicionarAoCarrinho()">+ Adicionar</button>
+            </div>
+          </div>
+
+          <!-- FORMA DE PAGAMENTO -->
+          <div class="pdv-payment-section">
+            <div class="pdv-section-label">Forma de Pagamento</div>
+            <div class="pdv-formas-grid">
+              <button class="pdv-forma ativo" id="pdvfDinheiro"  onclick="pdvSetForma('Dinheiro')">💵<span>Dinheiro</span></button>
+              <button class="pdv-forma"        id="pdvfPix"      onclick="pdvSetForma('Pix')">⚡<span>PIX</span></button>
+              <button class="pdv-forma"        id="pdvfDebito"   onclick="pdvSetForma('Cartao-Debito')">💳<span>Débito</span></button>
+              <button class="pdv-forma"        id="pdvfCredito"  onclick="pdvSetForma('Cartao-Credito')">💳<span>Crédito</span></button>
+              <button class="pdv-forma"        id="pdvfCrediario" onclick="pdvSetForma('Crediario')">📋<span>Crediário</span></button>
+            </div>
+          </div>
+
+          <!-- ACESSO RÁPIDO -->
+          <div class="pdv-quick-section">
+            <div class="pdv-section-header">
+              <div class="pdv-section-label">Acesso Rápido</div>
+              <div class="grafico-controls">
+                <button class="grafico-btn ativo" id="pdvBtnRec"  onclick="pdvSetTab('recentes')">Recentes</button>
+                <button class="grafico-btn"        id="pdvBtnFreq" onclick="pdvSetTab('frequentes')">Mais Vendidos</button>
+              </div>
+            </div>
+            <div id="pdvQuickGrid" class="pdv-quick-grid"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL: CART -->
+        <div class="pdv-right">
+          <div class="pdv-cart-panel">
+
+            <div class="pdv-cart-head">
+              <span class="pdv-cart-title">Carrinho</span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span id="pdvCartCount" class="carrinho-badge">0 itens</span>
+                <button class="btn-ghost" onclick="pdvLimpar()" style="font-size:0.72rem;padding:3px 8px;color:var(--red)">✕ Limpar</button>
+              </div>
+            </div>
+
+            <div id="pdvCartLista" class="pdv-cart-lista">
+              <div class="pdv-cart-empty">
+                <div style="font-size:2.5rem;opacity:0.22;margin-bottom:8px;">🛒</div>
+                <p>Aguardando produtos</p>
+                <small>Escaneie um código ou use <kbd>F2</kbd></small>
+              </div>
+            </div>
+
+            <div id="pdvCartFooter" class="pdv-cart-footer" style="display:none;">
+              <div class="pdv-summary-rows">
+                <div class="pdv-sum-row"><span>Subtotal</span><span id="pdvSumSubtotal">R$ 0,00</span></div>
+                <div class="pdv-sum-row pdv-sum-desc"><span>Desconto</span><span id="pdvSumDesconto">- R$ 0,00</span></div>
+                <div class="pdv-sum-divider"></div>
+                <div class="pdv-sum-row pdv-sum-lucro" id="pdvRowLucro"><span>Lucro</span><span id="pdvSumLucro">R$ 0,00</span></div>
+                <div class="pdv-sum-row pdv-sum-margem" id="pdvRowMargem"><span>Margem</span><span id="pdvSumMargem">0%</span></div>
+              </div>
+              <div class="pdv-total-block">
+                <span class="pdv-total-label">TOTAL DA VENDA</span>
+                <span class="pdv-total-val" id="pdvTotalVal">R$ 0,00</span>
+              </div>
+              <button class="pdv-btn-finalizar" onclick="finalizarVendaPDV()">
+                Finalizar Venda <kbd>F5</kbd>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="pdv-kbd-hints">
+        <span><kbd>F2</kbd> Focar busca</span>
+        <span><kbd>F5</kbd> Finalizar</span>
+        <span><kbd>ESC</kbd> Limpar</span>
+        <span><kbd>Enter</kbd> Adicionar</span>
+      </div>
+    </section>
+
+    <!-- ======================== CREDIÁRIO ======================== -->
+    <section id="crediario">
+
+      <!-- HEADER -->
+      <div class="crd-header-bar">
+        <div>
+          <h2 style="margin:0;font-size:1.35rem;font-weight:800;">Cobrança & Crediário</h2>
+          <span class="dash-subtitle">Centro de controle de recebimentos</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-ghost" onclick="initCrediario()" style="padding:8px 12px;">↺</button>
+        </div>
+      </div>
+
+      <!-- 4 BIG KPIs -->
+      <div class="crd-kpi-main" id="crdKpiRow"></div>
+
+      <!-- FILTER TABS + SEARCH -->
+      <div class="crd-filter-tabs">
+        <button class="crd-tab" id="crdBatrasado" onclick="crdFiltrar('atrasado')">Em Atraso <span class="crd-tab-ct" id="ctAtrasado">0</span></button>
+        <button class="crd-tab" id="crdBhoje"     onclick="crdFiltrar('hoje')">Vence Hoje <span class="crd-tab-ct" id="ctHoje">0</span></button>
+        <button class="crd-tab" id="crdBsemana"   onclick="crdFiltrar('semana')">7 Dias <span class="crd-tab-ct" id="ctSemana">0</span></button>
+        <button class="crd-tab ativo" id="crdBtodos"   onclick="crdFiltrar('todos')">Todos</button>
+        <button class="crd-tab" id="crdBemdia"    onclick="crdFiltrar('emdia')">Em Dia</button>
+        <button class="crd-tab" id="crdBquitado"  onclick="crdFiltrar('quitado')">Quitados</button>
+        <div style="flex:1;min-width:12px;"></div>
+        <input type="text" class="crd-busca-input" id="crdBusca" placeholder="Buscar cliente..." oninput="crdRenderFeed()">
+      </div>
+
+      <!-- CLIENT FEED -->
+      <div id="crdClientFeed" class="crd-client-feed"></div>
+
+    </section>
+
+    <!-- ======================== NUVEM ======================== -->
+    <!-- Nuvem removida — sync automático continua ativo via firebase.js -->
+    <p id="ultimaDataBackup" style="display:none"></p>
+
+    <!-- ======================== PAINEL DE CONTROLE ======================== -->
+    <section id="historico">
+      <h2>Histórico de Vendas</h2>
+
+      <!-- Filtros de período -->
+      <div class="hist-periodo-bar">
+        <button class="hist-periodo-btn" onclick="filtrarPorPeriodo(7)">7 dias</button>
+        <button class="hist-periodo-btn" onclick="filtrarPorPeriodo(15)">15 dias</button>
+        <button class="hist-periodo-btn" onclick="filtrarPorPeriodo(30)">30 dias</button>
+        <button class="hist-periodo-btn" onclick="filtrarPorPeriodo(90)">3 meses</button>
+        <button class="hist-periodo-btn" onclick="filtrarPorPeriodo(180)">6 meses</button>
+        <button class="hist-periodo-btn" onclick="filtrarPorPeriodo(365)">1 ano</button>
+        <button class="hist-periodo-btn ativo" id="btnPeriodoTodo" onclick="filtrarPorPeriodo(0)">Todo período</button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="painel-kpis">
+        <div class="kpi-card kpi-verde">
+          <div class="kpi-icon">R$</div>
+          <div class="kpi-body">
+            <p class="kpi-label">Total Vendido</p>
+            <p class="kpi-valor" id="totalVendido">0,00</p>
+          </div>
+        </div>
+        <div class="kpi-card kpi-roxo">
+          <div class="kpi-icon">#</div>
+          <div class="kpi-body">
+            <p class="kpi-label">Vendas Realizadas</p>
+            <p class="kpi-valor" id="totalVendas">0</p>
+          </div>
+        </div>
+        <div class="kpi-card kpi-azul">
+          <div class="kpi-icon">~</div>
+          <div class="kpi-body">
+            <p class="kpi-label">Ticket Médio</p>
+            <p class="kpi-valor" id="ticketMedio">0,00</p>
+          </div>
+        </div>
+        <div class="kpi-card kpi-laranja">
+          <div class="kpi-icon">▣</div>
+          <div class="kpi-body">
+            <p class="kpi-label">Valor em Estoque</p>
+            <p class="kpi-valor" id="valorTotalEstoque">0,00</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="painel-filtros">
+        <div class="filtro-group">
+          <label for="filtroData">Data</label>
+          <input type="date" id="filtroData" onchange="filtrarVendas()">
+        </div>
+        <div class="filtro-group">
+          <label for="filtroForma">Pagamento</label>
+          <select id="filtroForma" onchange="filtrarVendas()">
+            <option value="">Todos</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Pix">PIX</option>
+            <option value="Cartao-Debito">Cartão Débito</option>
+            <option value="Cartao-Credito">Cartão Crédito</option>
+            <option value="Crediario">Crediário</option>
+          </select>
+        </div>
+        <div class="filtro-actions">
+          <button onclick="removerFiltro()">Limpar</button>
+        </div>
+      </div>
+
+      <!-- Totais por forma -->
+      <div id="totaisPorForma"></div>
+
+      <!-- Tabela -->
+      <div class="table-wrapper">
+        <table id="tabelaVendas"></table>
+      </div>
+
+      <!-- Gráfico -->
+      <div class="painel-grafico">
+        <div class="painel-grafico-topo">
+          <h3>Gráfico de Vendas</h3>
+          <div class="grafico-controls">
+            <button id="btnSemana" class="grafico-btn ativo" onclick="setGrafico('semana')">Semanal</button>
+            <button id="btnMes"    class="grafico-btn"       onclick="setGrafico('mes')">Mensal</button>
+            <button id="btnAno"    class="grafico-btn"       onclick="setGrafico('ano')">Anual</button>
+          </div>
+        </div>
+        <canvas id="graficoVendas"></canvas>
+      </div>
+    </section>
+
+    <!-- ======================== DESPESAS ======================== -->
+    <section id="despesas">
+
+      <div class="desp-header-bar">
+        <div>
+          <h2 style="margin:0;font-size:1.35rem;font-weight:800;">Controle de Despesas</h2>
+          <span class="dash-subtitle">Contas, boletos e investimentos da loja</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-ghost" onclick="initDespesas()" style="padding:8px 12px;">↺</button>
+          <button class="btn-primary" onclick="abrirFormDespesa(null)">+ Nova Despesa</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="desp-kpi-row" id="despKpiRow"></div>
+
+      <!-- Alerta vencimentos -->
+      <div id="despAlertaVenc"></div>
+
+      <!-- Filtros por tab -->
+      <div class="desp-filter-tabs">
+        <button class="desp-tab ativo" id="despBtodas"    onclick="despFiltrar('todas')">Todas</button>
+        <button class="desp-tab" id="despBpendente"       onclick="despFiltrar('pendente')">Pendentes <span class="desp-tab-ct" id="ctDespPendente">0</span></button>
+        <button class="desp-tab" id="despBatrasado"       onclick="despFiltrar('atrasado')">Atrasadas <span class="desp-tab-ct" id="ctDespAtrasado">0</span></button>
+        <button class="desp-tab" id="despBhoje"           onclick="despFiltrar('hoje')">Vence Hoje <span class="desp-tab-ct" id="ctDespHoje">0</span></button>
+        <button class="desp-tab" id="despBpago"           onclick="despFiltrar('pago')">Pagas</button>
+        <div style="flex:1;min-width:12px;"></div>
+        <select class="desp-select-cat" id="despFiltroCategoria" onchange="despRenderFeed()">
+          <option value="">Todas as categorias</option>
+          <option value="Água">Água</option>
+          <option value="Luz">Luz</option>
+          <option value="Internet">Internet</option>
+          <option value="Aluguel">Aluguel</option>
+          <option value="Fornecedor">Fornecedor</option>
+          <option value="Funcionários">Funcionários</option>
+          <option value="Investimento">Investimento</option>
+          <option value="Outros">Outros</option>
+        </select>
+      </div>
+
+      <!-- Feed de despesas -->
+      <div id="despFeed" class="desp-feed"></div>
+
+    </section>
+
+    <!-- ======================== CONFIGURAÇÕES ======================== -->
+    <section id="configuracoes">
+
+      <div class="cfg-header">
+        <h2>Configurações</h2>
+        <span class="dash-subtitle">Gerencie sua conta e preferências do sistema</span>
+      </div>
+
+      <!-- Perfil da conta -->
+      <div class="cfg-card">
+        <div class="cfg-card-title">Perfil da Conta</div>
+        <div class="cfg-field-row">
+          <div class="form-group">
+            <label class="cfg-label">E-mail</label>
+            <input type="email" id="cfgEmail" class="cfg-input cfg-input-locked" readonly disabled>
+          </div>
+          <div class="form-group">
+            <label class="cfg-label">Cargo</label>
+            <input type="text" id="cfgCargo" class="cfg-input cfg-input-locked" readonly disabled>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documento fiscal no PDF -->
+      <div class="cfg-card">
+        <div class="cfg-card-title">Documento Fiscal (PDF)</div>
+        <div class="cfg-card-desc">Aparece nos comprovantes e recibos gerados pelo sistema.</div>
+        <div class="form-group" style="margin-top:14px;">
+          <label class="cfg-label">CNPJ ou CPF da loja</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="cfgDocFiscal" class="cfg-input" placeholder="Ex: 00.000.000/0001-00 ou 000.000.000-00" maxlength="18">
+            <button class="btn-primary cfg-save-btn" onclick="salvarDocumentoFiscal()">Salvar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alterar senha -->
+      <div class="cfg-card">
+        <div class="cfg-card-title">Alterar Senha</div>
+        <div class="cfg-card-desc">Informe a senha atual para confirmar a troca.</div>
+        <div class="cfg-senha-form">
+          <div class="form-group">
+            <label class="cfg-label">Senha atual</label>
+            <div class="auth-senha-wrap">
+              <input type="password" id="cfgSenhaAtual" class="cfg-input" placeholder="••••••••" autocomplete="current-password">
+              <button class="auth-eye-btn" type="button" onclick="cfgToggleSenha('cfgSenhaAtual',this)" tabindex="-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="cfg-label">Nova senha</label>
+            <div class="auth-senha-wrap">
+              <input type="password" id="cfgNovaSenha" class="cfg-input" placeholder="••••••••" autocomplete="new-password">
+              <button class="auth-eye-btn" type="button" onclick="cfgToggleSenha('cfgNovaSenha',this)" tabindex="-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="cfg-label">Confirmar nova senha</label>
+            <div class="auth-senha-wrap">
+              <input type="password" id="cfgConfirmarSenha" class="cfg-input" placeholder="••••••••" autocomplete="new-password">
+              <button class="auth-eye-btn" type="button" onclick="cfgToggleSenha('cfgConfirmarSenha',this)" tabindex="-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div id="cfgSenhaErro" class="cfg-erro" style="display:none;"></div>
+          <button class="btn-primary" onclick="cfgAlterarSenha()" id="cfgBtnAlterarSenha">Alterar Senha</button>
+        </div>
+      </div>
+
+      <!-- Zona de perigo -->
+      <div class="cfg-card cfg-card-danger">
+        <div class="cfg-card-title cfg-danger-title">Zona de Perigo</div>
+        <div class="cfg-danger-row">
+          <div>
+            <div class="cfg-danger-label">Limpar Estoque</div>
+            <div class="cfg-danger-desc">Remove todos os produtos do estoque permanentemente. Esta ação não pode ser desfeita.</div>
+          </div>
+          <button class="btn-danger cfg-danger-btn" onclick="cfgLimparEstoque()">Limpar Estoque</button>
+        </div>
+        <div class="cfg-danger-divider"></div>
+        <div class="cfg-danger-row">
+          <div>
+            <div class="cfg-danger-label">Excluir Histórico de Vendas</div>
+            <div class="cfg-danger-desc">Apaga todas as vendas registradas permanentemente. Esta ação não pode ser desfeita.</div>
+          </div>
+          <button class="btn-danger cfg-danger-btn" onclick="cfgLimparHistorico()">Excluir Histórico</button>
+        </div>
+      </div>
+
+    </section>
+
+  </div><!-- /.app-wrapper -->
+
+  <!-- ======= MODAL: LIMPAR ESTOQUE (countdown) ======= -->
+  <div id="cfgLimparOverlay" class="alert-overlay" onclick="cfgFecharLimparModal()"></div>
+  <div id="cfgLimparModal" class="alert-modal cfg-limpar-modal" role="alertdialog" aria-modal="true">
+    <div class="cfg-limpar-icon">⚠</div>
+    <div class="cfg-limpar-titulo">Limpar Estoque</div>
+    <div class="cfg-limpar-msg">Todos os <strong id="cfgLimparQtd">0</strong> produtos serão removidos permanentemente.<br>Esta ação <strong>não pode ser desfeita</strong>.</div>
+    <div class="cfg-countdown-wrap">
+      <svg class="cfg-countdown-ring" viewBox="0 0 44 44">
+        <circle class="cfg-countdown-track" cx="22" cy="22" r="18"/>
+        <circle class="cfg-countdown-fill" id="cfgCountdownCircle" cx="22" cy="22" r="18"/>
+      </svg>
+      <span class="cfg-countdown-num" id="cfgCountdownNum">10</span>
+    </div>
+    <div class="cfg-limpar-hint" id="cfgLimparHint">Aguarde <span id="cfgHintSec">10</span>s para confirmar…</div>
+    <div class="confirm-btns">
+      <button class="btn-ghost confirm-cancel-btn" onclick="cfgFecharLimparModal()">Cancelar</button>
+      <button id="cfgLimparOkBtn" class="btn-danger confirm-ok-btn" disabled onclick="cfgExecutarLimparEstoque()">Confirmar</button>
+    </div>
+  </div>
+
+  <!-- ======= MODAL: EXCLUIR HISTÓRICO (countdown) ======= -->
+  <div id="cfgHistoricoOverlay" class="alert-overlay" onclick="cfgFecharHistoricoModal()"></div>
+  <div id="cfgHistoricoModal" class="alert-modal cfg-limpar-modal" role="alertdialog" aria-modal="true">
+    <div class="cfg-limpar-icon">⚠</div>
+    <div class="cfg-limpar-titulo">Excluir Histórico de Vendas</div>
+    <div class="cfg-limpar-msg">Todas as <strong id="cfgHistoricoQtd">0</strong> vendas serão excluídas permanentemente.<br>Esta ação <strong>não pode ser desfeita</strong>.</div>
+    <div class="cfg-countdown-wrap">
+      <svg class="cfg-countdown-ring" viewBox="0 0 44 44">
+        <circle class="cfg-countdown-track" cx="22" cy="22" r="18"/>
+        <circle class="cfg-countdown-fill" id="cfgHistoricoCircle" cx="22" cy="22" r="18"/>
+      </svg>
+      <span class="cfg-countdown-num" id="cfgHistoricoNum">10</span>
+    </div>
+    <div class="cfg-limpar-hint" id="cfgHistoricoHint">Aguarde <span id="cfgHistoricoSec">10</span>s para confirmar…</div>
+    <div class="confirm-btns">
+      <button class="btn-ghost confirm-cancel-btn" onclick="cfgFecharHistoricoModal()">Cancelar</button>
+      <button id="cfgHistoricoOkBtn" class="btn-danger confirm-ok-btn" disabled onclick="cfgExecutarLimparHistorico()">Confirmar</button>
+    </div>
+  </div>
+
+  <!-- ======= DRAWER: FORM PRODUTO ======= -->
+  <div id="estFormOverlay" class="est-overlay" onclick="fecharFormProduto()"></div>
+  <div id="estFormDrawer" class="est-drawer">
+    <div class="est-drawer-header">
+      <div>
+        <div id="estFormTitulo" class="est-drawer-title">Novo Produto</div>
+        <div class="est-drawer-sub">Preencha as informações do produto</div>
+      </div>
+      <button class="btn-ghost" onclick="fecharFormProduto()" style="font-size:1.1rem;padding:6px 10px;">✕</button>
+    </div>
+    <div class="est-tabs">
+      <button class="est-tab ativo" id="estTab0btn" onclick="prodWizardIrAba(0)">Básico</button>
+      <button class="est-tab" id="estTab1btn" onclick="prodWizardIrAba(1)">Estoque</button>
+      <button class="est-tab" id="estTab2btn" onclick="prodWizardIrAba(2)">Financeiro</button>
+    </div>
+    <div class="est-tab-body">
+      <div class="est-tab-panel ativo" id="estTab0">
+        <div class="form-group">
+          <label>Nome do Produto *</label>
+          <input type="text" id="nomeProduto" placeholder="Ex: Camiseta Básica Branca P">
+        </div>
+        <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="form-group">
+            <label>Código Interno</label>
+            <input type="text" id="codigoInternoProduto" placeholder="Ex: 000001">
+          </div>
+          <div class="form-group">
+            <label>SKU</label>
+            <input type="text" id="skuProduto" placeholder="Ex: CAM-NIKE-001">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Código de Barras</label>
+          <input type="text" id="codigoBarrasProduto" placeholder="Ex: 7891234567890">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <input type="text" id="categoriaProduto" placeholder="Ex: Camisetas, Calças, Acessórios">
+        </div>
+        <div class="form-group">
+          <label>Marca</label>
+          <input type="text" id="marcaProduto" placeholder="Ex: Nike, Hering...">
+        </div>
+        <div class="form-group">
+          <label>Fornecedor</label>
+          <input type="text" id="fornecedorProduto" placeholder="Ex: Distribuidora XYZ">
+        </div>
+      </div>
+      <div class="est-tab-panel" id="estTab1">
+        <div class="form-group">
+          <label>Quantidade em Estoque *</label>
+          <input type="number" id="quantidadeProduto" placeholder="0" min="0" oninput="calcularMargemForm()">
+        </div>
+        <div class="form-group">
+          <label>Estoque Mínimo</label>
+          <input type="number" id="estoqueMinProduto" placeholder="Ex: 5" min="0">
+          <span class="input-hint">Alerta quando atingir este nível</span>
+        </div>
+        <div class="form-group">
+          <label>Localização</label>
+          <input type="text" id="localizacaoProduto" placeholder="Ex: Prateleira A3, Depósito 2">
+        </div>
+      </div>
+      <div class="est-tab-panel" id="estTab2">
+        <div class="form-group">
+          <label>Preço de Compra (R$)</label>
+          <input type="number" id="precoCompraProduto" placeholder="0,00" min="0" step="0.01" oninput="calcularMargemForm()">
+          <span class="input-hint">Quanto você pagou ao fornecedor</span>
+        </div>
+        <div class="form-group">
+          <label>Preço de Venda (R$) *</label>
+          <input type="number" id="precoVendaProduto" placeholder="0,00" min="0" step="0.01" oninput="calcularMargemForm()">
+        </div>
+        <div id="margemPreview" class="est-margem-preview" style="display:none;"></div>
+      </div>
+    </div>
+    <div class="est-drawer-footer">
+      <button class="btn-ghost" onclick="fecharFormProduto()">Cancelar</button>
+      <button class="btn-primary" id="prodWizardBtn" onclick="prodWizardAvancar()" style="flex:1;">Próxima aba</button>
+    </div>
+  </div>
+
+  <!-- ======= DRAWER: DETALHE PRODUTO ======= -->
+  <div id="estProdOverlay" class="est-overlay" onclick="fecharDrawerProduto()"></div>
+  <div id="estProdDrawer" class="est-drawer">
+    <div class="est-drawer-header">
+      <div>
+        <div id="prodDrawerNome" class="est-drawer-title">Produto</div>
+        <div id="prodDrawerSub" class="est-drawer-sub">Detalhes e histórico</div>
+      </div>
+      <button class="btn-ghost" onclick="fecharDrawerProduto()" style="font-size:1.1rem;padding:6px 10px;">✕</button>
+    </div>
+    <div id="prodDrawerContent" class="est-drawer-content"></div>
+  </div>
+
+  <!-- ======= DRAWER: FORM CREDIÁRIO ======= -->
+  <div id="crdFormOverlay" class="est-overlay" onclick="fecharFormCrediario()"></div>
+  <div id="crdFormDrawer" class="est-drawer crd-drawer-wide">
+    <div class="est-drawer-header">
+      <span id="crdFormTitulo">Novo Crediário</span>
+      <button class="btn-ghost" onclick="fecharFormCrediario()" style="font-size:1.1rem;padding:6px 10px;">✕</button>
+    </div>
+    <div class="est-drawer-body" style="overflow-y:auto;flex:1;padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <div class="crd-form-section-label">DADOS DO CLIENTE</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group">
+          <label>Nome do Cliente *</label>
+          <input type="text" id="crdNome" placeholder="Nome completo">
+        </div>
+        <div class="form-group">
+          <label>CPF</label>
+          <input type="text" id="crdCpf" placeholder="000.000.000-00">
+        </div>
+        <div class="form-group">
+          <label>Telefone</label>
+          <input type="text" id="crdTelefone" placeholder="+55 55 99999-9999">
+        </div>
+        <div class="form-group">
+          <label>Data da Compra</label>
+          <input type="date" id="crdDataCompra">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Produtos Comprados</label>
+        <input type="text" id="crdProdutos" placeholder="Descreva os produtos comprados">
+      </div>
+      <div class="crd-form-section-label">CONDIÇÕES FINANCEIRAS</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group">
+          <label>Valor Total (R$) *</label>
+          <input type="number" id="crdValorTotal" placeholder="0,00" min="0" step="0.01" oninput="crdCalcPreview()">
+        </div>
+        <div class="form-group">
+          <label>Entrada (R$)</label>
+          <input type="number" id="crdEntrada" placeholder="0,00" min="0" step="0.01" value="0" oninput="crdCalcPreview()">
+        </div>
+        <div class="form-group">
+          <label>Nº de Parcelas *</label>
+          <input type="number" id="crdNParcelas" placeholder="Ex: 3" min="1" max="60" oninput="crdCalcPreview()">
+        </div>
+        <div class="form-group">
+          <label>1º Vencimento *</label>
+          <input type="date" id="crdPrimVenc" oninput="crdCalcPreview()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Observações</label>
+        <input type="text" id="crdObs" placeholder="Observações adicionais">
+      </div>
+      <div id="crdParcelasPreview" class="crd-parcelas-preview" style="display:none;"></div>
+    </div>
+    <div class="est-drawer-footer">
+      <button class="btn-ghost" onclick="fecharFormCrediario()">Cancelar</button>
+      <button class="btn-primary" onclick="salvarCrediario()" style="flex:1;">Salvar Crediário</button>
+    </div>
+  </div>
+
+  <!-- ======= DRAWER: DETALHE CLIENTE CREDIÁRIO ======= -->
+  <div id="crdClienteOverlay" class="est-overlay" onclick="fecharClienteDrawer()"></div>
+  <div id="crdClienteDrawer" class="est-drawer crd-drawer-wide">
+    <div class="est-drawer-header">
+      <span id="crdClienteTitulo">Detalhes do Cliente</span>
+      <button class="btn-ghost" onclick="fecharClienteDrawer()" style="font-size:1.1rem;padding:6px 10px;">✕</button>
+    </div>
+    <div id="crdClienteBody" class="est-drawer-body" style="overflow-y:auto;flex:1;padding:20px;"></div>
+    <div class="est-drawer-footer" id="crdClienteFooter"></div>
+  </div>
+
+  <!-- ======= DRAWER: FORM DESPESA ======= -->
+  <div id="despFormOverlay" class="est-overlay" onclick="fecharFormDespesa()"></div>
+  <div id="despFormDrawer" class="est-drawer crd-drawer-wide">
+    <div class="est-drawer-header">
+      <div>
+        <div id="despFormTitulo" class="est-drawer-title">Nova Despesa</div>
+        <div class="est-drawer-sub">Registre uma conta ou despesa da loja</div>
+      </div>
+      <button class="btn-ghost" onclick="fecharFormDespesa()" style="font-size:1.1rem;padding:6px 10px;">✕</button>
+    </div>
+    <div class="est-drawer-body" style="overflow-y:auto;flex:1;padding:20px;display:flex;flex-direction:column;gap:14px;">
+
+      <div class="form-group">
+        <label>Descrição *</label>
+        <input type="text" id="despDescricao" placeholder="Ex: Conta de Luz Junho, Fornecedor XYZ...">
+      </div>
+
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group">
+          <label>Categoria *</label>
+          <select id="despCategoria" class="cfg-input" style="background:var(--surface-3);color:var(--text-primary);border:1px solid var(--border);padding:10px 12px;border-radius:var(--radius-sm);">
+            <option value="">Selecione...</option>
+            <option value="Água">Água</option>
+            <option value="Luz">Luz</option>
+            <option value="Internet">Internet</option>
+            <option value="Aluguel">Aluguel</option>
+            <option value="Fornecedor">Fornecedor</option>
+            <option value="Funcionários">Funcionários</option>
+            <option value="Investimento">Investimento</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Valor (R$) *</label>
+          <input type="number" id="despValor" placeholder="0,00" min="0" step="0.01">
+        </div>
+      </div>
+
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group">
+          <label>Data de Vencimento *</label>
+          <input type="date" id="despVencimento">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="despStatus" class="cfg-input" style="background:var(--surface-3);color:var(--text-primary);border:1px solid var(--border);padding:10px 12px;border-radius:var(--radius-sm);">
+            <option value="pendente">Pendente</option>
+            <option value="pago">Pago</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" id="despDataPagGrupo" style="display:none;">
+        <label>Data do Pagamento</label>
+        <input type="date" id="despDataPagamento">
+      </div>
+
+      <div class="form-group">
+        <label>Recorrente?</label>
+        <div class="desp-recorrente-row">
+          <label class="desp-toggle-wrap">
+            <input type="checkbox" id="despRecorrente" onchange="despToggleRecorrente()">
+            <span class="desp-toggle-track"><span class="desp-toggle-thumb"></span></span>
+            <span class="desp-toggle-label">Repetir todo mês</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Observações</label>
+        <input type="text" id="despObs" placeholder="Ex: Referente ao mês de junho, boleto nº 12345...">
+      </div>
+
+      <div id="despFormErro" class="cfg-erro" style="display:none;"></div>
+
+    </div>
+    <div class="est-drawer-footer">
+      <button class="btn-ghost" onclick="fecharFormDespesa()">Cancelar</button>
+      <button class="btn-primary" onclick="salvarDespesa()" style="flex:1;" id="despSalvarBtn">Salvar Despesa</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer1">
+      <span><strong>Copyright &copy; 2025 — Todos os direitos reservados.</strong></span>
+      <span>
+        Powered by
+        <a href="https://github.com/freitasfzw/" target="_blank">Freitas Fzw</a>
+      </span>
+    </div>
+  </div>
+
+
+  <!-- ======= MODAL: EDITAR METAS ======= -->
+  <!-- Alert estilizado global -->
+  <div id="alertOverlay" class="alert-overlay" onclick="fecharAlert()"></div>
+  <div id="alertModal" class="alert-modal" role="alertdialog" aria-modal="true">
+    <div id="alertIconWrap" class="alert-icon-wrap"></div>
+    <div id="alertMsg" class="alert-msg"></div>
+    <button class="btn-primary alert-ok-btn" onclick="fecharAlert()">OK</button>
+  </div>
+
+  <!-- Confirm estilizado global -->
+  <div id="confirmOverlay" class="alert-overlay" onclick="fecharConfirm(false)"></div>
+  <div id="confirmModal" class="alert-modal" role="alertdialog" aria-modal="true">
+    <div id="confirmIconWrap" class="alert-icon-wrap tipo-aviso">⚠</div>
+    <div id="confirmMsg" class="alert-msg"></div>
+    <div class="confirm-btns">
+      <button class="btn-ghost confirm-cancel-btn" onclick="fecharConfirm(false)">Cancelar</button>
+      <button id="confirmOkBtn" class="btn-danger confirm-ok-btn" onclick="fecharConfirm(true)">Confirmar</button>
+    </div>
+  </div>
+
+  <!-- ══════ PREVIEW COMPROVANTE ══════ -->
+  <div id="cpPreviewOverlay" class="cp-overlay" style="display:none;" onclick="if(event.target===this)fecharPreviewComprovante()">
+    <div class="cp-modal">
+
+      <!-- Step 1: preview + botões -->
+      <div id="cpMainStep" style="display:flex;flex-direction:column;height:100%;">
+        <div class="cp-modal-head">
+          <span class="cp-modal-title">Comprovante</span>
+          <button class="btn-ghost cp-close-btn" onclick="fecharPreviewComprovante()">✕</button>
+        </div>
+        <div class="cp-scroll">
+          <div id="cpPreviewBody"></div>
+        </div>
+        <div class="cp-modal-footer">
+          <button class="cp-btn-wpp" onclick="cpAbrirWhatsapp()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Enviar por WhatsApp
+          </button>
+          <button class="cp-btn-baixar" onclick="cpBaixar()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Baixar Comprovante
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: número WhatsApp -->
+      <div id="cpWhatsappStep" style="display:none;flex-direction:column;height:100%;">
+        <div class="cp-modal-head">
+          <button class="btn-ghost" onclick="cpVoltarMain()" style="font-size:0.85rem;padding:4px 8px;">← Voltar</button>
+          <span class="cp-modal-title">Enviar por WhatsApp</span>
+          <button class="btn-ghost cp-close-btn" onclick="fecharPreviewComprovante()">✕</button>
+        </div>
+        <div class="cp-wpp-body">
+          <div class="cp-wpp-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </div>
+          <p class="cp-wpp-desc">Digite o número do cliente para enviar o comprovante via WhatsApp</p>
+          <div class="cp-wpp-field">
+            <span class="cp-wpp-ddi">+55</span>
+            <input type="tel" id="cpWhatsappNum" class="cp-wpp-input" placeholder="(55) 99999-9999" maxlength="15"
+              oninput="this.value=this.value.replace(/\D/g,'').replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2').substring(0,15)"
+              onkeydown="if(event.key==='Enter')cpEnviarWhatsapp()">
+          </div>
+          <div id="cpWhatsappErro" class="cp-wpp-erro" style="display:none;">Número inválido. Digite DDD + número.</div>
+        </div>
+        <div class="cp-modal-footer">
+          <button class="cp-btn-wpp cp-btn-wpp-full" onclick="cpEnviarWhatsapp()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Confirmar e Enviar
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal de sucesso de venda (estilo Mercado Pago) -->
+  <div id="vendaSucessoOverlay" class="venda-sucesso-overlay" style="display:none;">
+    <div class="venda-sucesso-modal">
+      <div class="venda-sucesso-check">
+        <svg viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+          <circle class="venda-sucesso-circle" cx="26" cy="26" r="24" fill="none" stroke-width="3"/>
+          <path class="venda-sucesso-tick" fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" d="M14 27l8 8 16-16"/>
+        </svg>
+      </div>
+      <div class="venda-sucesso-label">Venda Concluída</div>
+      <div class="venda-sucesso-valor" id="vendaSucessoValor">R$ 0,00</div>
+      <div class="venda-sucesso-forma" id="vendaSucessoForma"></div>
+      <div class="venda-sucesso-itens" id="vendaSucessoItens"></div>
+      <div class="venda-sucesso-btns">
+        <button class="venda-sucesso-btn-comp" id="vendaSucessoBtnComp" onclick="vendaSucessoComprovante()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Gerar Comprovante
+        </button>
+        <button class="venda-sucesso-btn-nova" onclick="fecharVendaSucesso()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova Venda
+        </button>
+      </div>
+      <button class="venda-sucesso-btn-concluido" onclick="vendaSucessoConcluido()">
+        Concluído
+      </button>
+    </div>
+  </div>
+
+  <div id="metasOverlay" class="metas-overlay" onclick="fecharModalMetas()"></div>
+  <div id="metasModal" class="metas-modal" role="dialog" aria-modal="true" aria-labelledby="metasModalTitle">
+    <div class="metas-modal-header">
+      <div>
+        <h3 id="metasModalTitle" class="metas-modal-title">Metas do Mês</h3>
+        <p class="metas-modal-sub">Defina os objetivos de performance</p>
+      </div>
+      <button class="btn-ghost metas-close-btn" onclick="fecharModalMetas()" aria-label="Fechar">✕</button>
+    </div>
+    <div class="metas-modal-body">
+      <div class="metas-field-group">
+        <label class="metas-label" for="metaFaturamento">
+          <span class="metas-label-icon">R$</span>
+          Faturamento Mensal
+        </label>
+        <input type="number" id="metaFaturamento" class="metas-input" placeholder="Ex: 10000" min="0" step="100">
+        <span class="metas-hint">Receita total esperada no mês</span>
+      </div>
+      <div class="metas-field-group">
+        <label class="metas-label" for="metaLucro">
+          <span class="metas-label-icon">◈</span>
+          Lucro Mensal
+        </label>
+        <input type="number" id="metaLucro" class="metas-input" placeholder="Ex: 4000" min="0" step="100">
+        <span class="metas-hint">Lucro líquido esperado após custos</span>
+      </div>
+      <div class="metas-field-group">
+        <label class="metas-label" for="metaVendas">
+          <span class="metas-label-icon">#</span>
+          Número de Vendas
+        </label>
+        <input type="number" id="metaVendas" class="metas-input" placeholder="Ex: 100" min="0" step="1">
+        <span class="metas-hint">Quantidade de transações no mês</span>
+      </div>
+      <div class="metas-field-group metas-field-destaque">
+        <label class="metas-label" for="metaDiaria">
+          <span class="metas-label-icon">◎</span>
+          Meta Diária de Faturamento
+        </label>
+        <input type="number" id="metaDiaria" class="metas-input" placeholder="Ex: 500" min="0" step="50">
+        <span class="metas-hint">Exibida na página inicial como barra de progresso</span>
+      </div>
+    </div>
+    <div class="metas-modal-footer">
+      <button class="btn-ghost" onclick="fecharModalMetas()">Cancelar</button>
+      <button class="btn-primary metas-save-btn" onclick="salvarModalMetas()">Salvar Metas</button>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+
+  <!-- ═══════ NAVEGAÇÃO MOBILE (bottom tab bar — iOS style) ═══════ -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav" role="navigation" aria-label="Navegação principal">
+    <div class="mobile-bottom-nav-inner">
+
+      <!-- Início — vendedor -->
+      <button class="mob-tab" data-role="vendedor" data-section="inicio" onclick="mostrarAba('inicio')" aria-label="Início">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Início</span>
+      </button>
+
+      <!-- Início — admin -->
+      <button class="mob-tab" data-role="admin" data-section="home" onclick="mostrarAba('home')" aria-label="Início">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Início</span>
+      </button>
+
+      <!-- PDV -->
+      <button class="mob-tab" data-section="vendas" onclick="mostrarAba('vendas')" aria-label="Registrar Venda" style="position:relative;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span>PDV</span>
+      </button>
+
+      <!-- Estoque -->
+      <button class="mob-tab" data-section="estoque" onclick="mostrarAba('estoque')" aria-label="Estoque">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="12 22.08 12 12"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg>
+        <span>Estoque</span>
+      </button>
+
+      <!-- Crediário -->
+      <button class="mob-tab" data-section="crediario" onclick="mostrarAba('crediario')" aria-label="Crediário">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <span>Crediário</span>
+      </button>
+
+      <!-- Dashboard — admin -->
+      <button class="mob-tab" data-role="admin" data-section="dashboard" onclick="mostrarAba('dashboard')" aria-label="Dashboard">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Dashboard</span>
+      </button>
+
+      <!-- Histórico — admin -->
+      <button class="mob-tab" data-role="admin" data-section="historico" onclick="mostrarAba('historico')" aria-label="Histórico">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Histórico</span>
+      </button>
+
+      <!-- Configurações -->
+      <button class="mob-tab" data-section="configuracoes" onclick="mostrarAba('configuracoes')" aria-label="Configurações">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Config.</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- ══════════════ PWA INSTALL PROMPT (iOS) ══════════════ -->
+  <div id="pwaOverlay" class="pwa-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="pwaTitulo">
+    <div class="pwa-backdrop" onclick="pwaLembrarDepois()"></div>
+    <div class="pwa-sheet">
+
+      <!-- Cabeçalho -->
+      <div class="pwa-header">
+        <div class="pwa-icon-wrap">
+          <img src="public/icon-192.png" class="pwa-logo-img" alt="Use Stylo">
+        </div>
+        <div class="pwa-pill"></div>
+        <h2 class="pwa-titulo" id="pwaTitulo">Instale o aplicativo</h2>
+        <p class="pwa-subtitulo">Acesse o Use Stylo direto da sua tela inicial</p>
+      </div>
+
+      <!-- Corpo principal (visível por padrão) -->
+      <div id="pwaCorpo" class="pwa-corpo">
+        <div class="pwa-info-card">
+          <div class="pwa-info-row">
+            <span class="pwa-info-icon">⚡</span>
+            <span>Mais rápido — sem precisar abrir o navegador</span>
+          </div>
+          <div class="pwa-info-row">
+            <span class="pwa-info-icon">🖥️</span>
+            <span>Tela inteira — sem barra do Safari</span>
+          </div>
+          <div class="pwa-info-row">
+            <span class="pwa-info-icon">🔄</span>
+            <span>Atualizações automáticas — sempre na versão mais nova</span>
+          </div>
+          <div class="pwa-info-row">
+            <span class="pwa-info-icon">🚫</span>
+            <span>Sem App Store — é só um atalho inteligente na tela inicial</span>
+          </div>
+        </div>
+
+        <p class="pwa-obs">Não é um aplicativo baixado. Não ocupa espaço significativo. É gratuito.</p>
+
+        <div class="pwa-acoes">
+          <button class="pwa-btn-primary" onclick="pwaAbrirTutorial()">Ver como instalar</button>
+          <button class="pwa-btn-secondary" onclick="pwaLembrarDepois()">Agora não</button>
+          <button class="pwa-btn-ghost" onclick="pwaNuncaMostrar()">Não mostrar novamente</button>
+        </div>
+      </div>
+
+      <!-- Tutorial passo a passo (oculto por padrão) -->
+      <div id="pwaTutorial" class="pwa-tutorial" style="display:none;">
+        <div class="pwa-steps">
+
+          <div class="pwa-step">
+            <div class="pwa-step-num">1</div>
+            <div class="pwa-step-body">
+              <strong>Toque em Compartilhar</strong>
+              <span>O ícone fica na barra inferior do Safari — um quadrado com uma seta para cima</span>
+              <img src="public/passo1.jpeg" class="pwa-step-img" alt="Passo 1 — botão compartilhar">
+            </div>
+          </div>
+
+          <div class="pwa-step">
+            <div class="pwa-step-num">2</div>
+            <div class="pwa-step-body">
+              <strong>Role as opções para baixo</strong>
+              <span>As opções aparecem em uma lista — role até encontrar Adicionar à Tela de Início</span>
+              <img src="public/passo2.jpeg" class="pwa-step-img" alt="Passo 2 — rolar opções">
+            </div>
+          </div>
+
+          <div class="pwa-step">
+            <div class="pwa-step-num">3</div>
+            <div class="pwa-step-body">
+              <strong>Toque em Adicionar à Tela de Início</strong>
+              <span>O ícone parece um quadrado com um símbolo de adição (+)</span>
+              <img src="public/passo3.jpeg" class="pwa-step-img" alt="Passo 3 — adicionar à tela de início">
+            </div>
+          </div>
+
+          <div class="pwa-step">
+            <div class="pwa-step-num">4</div>
+            <div class="pwa-step-body">
+              <strong>Confirme tocando em Adicionar</strong>
+              <span>O nome já virá preenchido como Use Stylo — só confirme</span>
+              <img src="public/passo4.jpeg" class="pwa-step-img" alt="Passo 4 — confirmar">
+            </div>
+          </div>
+
+          <div class="pwa-step pwa-step-final">
+            <div class="pwa-step-num pwa-step-num-ok">✓</div>
+            <div class="pwa-step-body">
+              <strong>Pronto!</strong>
+              <span>O ícone do Use Stylo aparecerá na tela inicial. Abra por ele para a experiência completa.</span>
+              <img src="public/passo5.jpeg" class="pwa-step-img" alt="Passo 5 — instalado">
+            </div>
+          </div>
+
+        </div>
+
+        <div class="pwa-acoes">
+          <button class="pwa-btn-primary" onclick="pwaFechar()">Entendi, vou instalar!</button>
+          <button class="pwa-btn-ghost" onclick="pwaNaoInstalar()">Não quero instalar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/pwa-prompt.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "backup": {
+      ".read":  "true",
+      ".write": "true"
+    },
+    "lojas": {
+      ".read":  "auth != null && auth.uid === 'Rn3mumPb3gPGWeaE5nQHtJndS093'",
+      ".write": "auth != null && auth.uid === 'Rn3mumPb3gPGWeaE5nQHtJndS093'"
+    },
+    "usuarios": {
+      ".read":  "auth != null && auth.uid === 'Rn3mumPb3gPGWeaE5nQHtJndS093'",
+      ".write": "auth != null && auth.uid === 'Rn3mumPb3gPGWeaE5nQHtJndS093'"
+    }
+  }
+}

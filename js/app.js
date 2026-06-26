@@ -2,6 +2,17 @@ var estoque = [];
 var vendas  = [];
 let carrinho = [];
 
+function localDateStr(d) {
+  const dt = d || new Date();
+  return dt.getFullYear() + '-'
+    + String(dt.getMonth() + 1).padStart(2, '0') + '-'
+    + String(dt.getDate()).padStart(2, '0');
+}
+
+function localMonthStr(d) {
+  return localDateStr(d || new Date()).slice(0, 7);
+}
+
 // ── Controle de acesso por perfil ─────────────────────────
 // admin   → acesso total (home, dashboard, historico, etc.)
 // vendedor → inicio, estoque, vendas, crediario
@@ -298,7 +309,7 @@ function atualizarInicio() {
   if (nomeEl) nomeEl.textContent = window.currentUserNome || '';
 
   // Stats do dia
-  var hoje   = agora.toISOString().split('T')[0];
+  var hoje   = localDateStr(agora);
   var vendas = JSON.parse(localStorage.getItem('vendas')) || [];
   var est    = JSON.parse(localStorage.getItem('estoque')) || [];
 
@@ -579,7 +590,7 @@ function _startHomeClock() {
 function atualizarHome() {
   const vendas  = window.vendas  || [];
   const estoque = window.estoque || [];
-  const hojeStr = new Date().toISOString().split('T')[0];
+  const hojeStr = localDateStr();
 
   const vendasHoje = vendas.filter(v => v.data === hojeStr);
 
@@ -728,7 +739,7 @@ function adicionarProduto() {
       existente.precoVenda     = precoVenda;
       existente.preco          = precoVenda;
     } else {
-      estoque.push({ nome, codigoInterno, sku, codigoBarras, categoria, marca, fornecedor, quantidade, estoqueMin: isNaN(estoqueMin) ? 0 : estoqueMin, localizacao, precoCompra: isNaN(precoCompra) ? 0 : precoCompra, precoVenda, preco: precoVenda, dataCadastro: new Date().toISOString().split('T')[0] });
+      estoque.push({ nome, codigoInterno, sku, codigoBarras, categoria, marca, fornecedor, quantidade, estoqueMin: isNaN(estoqueMin) ? 0 : estoqueMin, localizacao, precoCompra: isNaN(precoCompra) ? 0 : precoCompra, precoVenda, preco: precoVenda, dataCadastro: localDateStr() });
     }
   }
 
@@ -1009,7 +1020,7 @@ function finalizarVenda() {
   if (!formaPagamento) return showAlert('Selecione a forma de pagamento.', 'aviso');
 
   const hoje = new Date();
-  const data = hoje.toISOString().split('T')[0];
+  const data = localDateStr(hoje);
   const hora = hoje.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
   carrinho.forEach(item => {
@@ -1410,7 +1421,7 @@ function filtrarPorPeriodo(dias) {
   } else {
     const corte = new Date();
     corte.setDate(corte.getDate() - dias);
-    const corteStr = corte.toISOString().split('T')[0];
+    const corteStr = localDateStr(corte);
     filtradas = [];
     indices   = [];
     todasVendas.forEach((v, i) => {
@@ -1491,8 +1502,8 @@ function atualizarGrafico(tipo) {
     const d   = new Date(v.data);
     const sub = v.quantidade * (v.precoComDesconto || v.preco);
     let chave;
-    if (tipo === 'semana')     chave = d.toISOString().split('T')[0];
-    else if (tipo === 'mes')   chave = d.toISOString().slice(0, 7);
+    if (tipo === 'semana')     chave = localDateStr(d);
+    else if (tipo === 'mes')   chave = localMonthStr(d);
     else if (tipo === 'ano')   chave = String(d.getFullYear());
     if (chave) mapa[chave] = (mapa[chave] || 0) + sub;
   });
@@ -1584,14 +1595,14 @@ function atualizarDashboard() {
 }
 
 function dashHojeStr() {
-  return new Date().toISOString().split('T')[0];
+  return localDateStr();
 }
 
 function dashGetVendas(tipo) {
   const todas = JSON.parse(localStorage.getItem('vendas')) || [];
   const hoje = new Date();
-  const hojeStr = hoje.toISOString().split('T')[0];
-  const mesStr = hoje.toISOString().slice(0, 7);
+  const hojeStr = localDateStr(hoje);
+  const mesStr = localMonthStr(hoje);
   const anoStr = String(hoje.getFullYear());
 
   return todas.filter(v => {
@@ -1599,11 +1610,11 @@ function dashGetVendas(tipo) {
     const diff = (hoje - new Date(v.data + 'T12:00:00')) / 86400000;
     switch (tipo) {
       case 'hoje': return v.data === hojeStr;
-      case 'ontem': { const d = new Date(hoje); d.setDate(d.getDate() - 1); return v.data === d.toISOString().split('T')[0]; }
+      case 'ontem': { const d = new Date(hoje); d.setDate(d.getDate() - 1); return v.data === localDateStr(d); }
       case 'semana': return diff >= 0 && diff < 7;
       case 'semana_ant': return diff >= 7 && diff < 14;
       case 'mes': return v.data.startsWith(mesStr);
-      case 'mes_ant': { const d = new Date(hoje); d.setMonth(d.getMonth() - 1); return v.data.startsWith(d.toISOString().slice(0, 7)); }
+      case 'mes_ant': { const d = new Date(hoje); d.setMonth(d.getMonth() - 1); return v.data.startsWith(localMonthStr(d)); }
       case 'ano': return v.data.startsWith(anoStr);
       case 'ano_ant': return v.data.startsWith(String(hoje.getFullYear() - 1));
       default: return true;
@@ -1727,7 +1738,7 @@ function dashRenderKpis() {
 function dashRenderMetas() {
   const metas = JSON.parse(localStorage.getItem('dashMetas')) || { faturamento: 10000, lucro: 4000, vendas: 100, metaDiaria: 500 };
   const mesVendas  = dashGetVendas('mes');
-  const hojeStr    = new Date().toISOString().split('T')[0];
+  const hojeStr    = localDateStr();
   const hojeVendas = (window.vendas || []).filter(v => v.data === hojeStr);
   const fatAtual   = dashFat(mesVendas);
   const lucroAtual = dashLucroValor(mesVendas);
@@ -1827,7 +1838,7 @@ function dashRenderGraficoLine(tipo) {
     for (let h = 23; h >= 0; h--) {
       const d = new Date(hoje);
       d.setHours(hoje.getHours() - h, 0, 0, 0);
-      const dtStr = d.toISOString().split('T')[0];
+      const dtStr = localDateStr(d);
       const hr = d.getHours();
       labels.push(hr + 'h');
       const vs = todas.filter(v => v.data === dtStr && v.hora && parseInt(v.hora.split(':')[0]) === hr);
@@ -1836,14 +1847,14 @@ function dashRenderGraficoLine(tipo) {
   } else if (tipo === '7d') {
     for (let d = 6; d >= 0; d--) {
       const dt = new Date(hoje); dt.setDate(dt.getDate() - d);
-      const dtStr = dt.toISOString().split('T')[0];
+      const dtStr = localDateStr(dt);
       labels.push(dtStr.slice(5).replace('-', '/'));
       dados.push(dashFat(todas.filter(v => v.data === dtStr)));
     }
   } else if (tipo === '30d') {
     for (let d = 29; d >= 0; d--) {
       const dt = new Date(hoje); dt.setDate(dt.getDate() - d);
-      const dtStr = dt.toISOString().split('T')[0];
+      const dtStr = localDateStr(dt);
       labels.push((29 - d) % 5 === 0 ? dtStr.slice(5).replace('-', '/') : '');
       dados.push(dashFat(todas.filter(v => v.data === dtStr)));
     }
@@ -1851,7 +1862,7 @@ function dashRenderGraficoLine(tipo) {
     const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     for (let m = 11; m >= 0; m--) {
       const dt = new Date(hoje); dt.setMonth(dt.getMonth() - m);
-      const ms = dt.toISOString().slice(0, 7);
+      const ms = localMonthStr(dt);
       labels.push(meses[dt.getMonth()]);
       dados.push(dashFat(todas.filter(v => v.data && v.data.startsWith(ms))));
     }
@@ -1886,7 +1897,7 @@ function dashRenderDonut(tipo) {
   const filtradas = todas.filter(v => {
     if (!v.data) return false;
     if (tipo === '24h') {
-      if (!v.hora) return v.data === hoje.toISOString().split('T')[0];
+      if (!v.hora) return v.data === localDateStr(hoje);
       const vd = new Date(v.data + 'T' + v.hora);
       return (hoje - vd) <= 24 * 60 * 60 * 1000;
     }
@@ -1945,7 +1956,7 @@ function dashRenderFluxo(tipo) {
   if (tipo === 'mes') {
     for (let m = 5; m >= 0; m--) {
       const dt = new Date(hoje); dt.setMonth(dt.getMonth() - m);
-      const ms = dt.toISOString().slice(0, 7);
+      const ms = localMonthStr(dt);
       labels.push(mesesNome[dt.getMonth()]);
       const vs = todas.filter(v => v.data && v.data.startsWith(ms));
       const r = dashFat(vs); const c = vs.reduce((s, v) => s + custo(v), 0);
@@ -1954,7 +1965,7 @@ function dashRenderFluxo(tipo) {
   } else if (tipo === 'semana') {
     for (let d = 6; d >= 0; d--) {
       const dt = new Date(hoje); dt.setDate(dt.getDate() - d);
-      const dtStr = dt.toISOString().split('T')[0];
+      const dtStr = localDateStr(dt);
       labels.push(diasNome[dt.getDay()]);
       const vs = todas.filter(v => v.data === dtStr);
       const r = dashFat(vs); const c = vs.reduce((s, v) => s + custo(v), 0);
@@ -1963,7 +1974,7 @@ function dashRenderFluxo(tipo) {
   } else {
     for (let d = 13; d >= 0; d--) {
       const dt = new Date(hoje); dt.setDate(dt.getDate() - d);
-      const dtStr = dt.toISOString().split('T')[0];
+      const dtStr = localDateStr(dt);
       labels.push(dtStr.slice(5).replace('-', '/'));
       const vs = todas.filter(v => v.data === dtStr);
       const r = dashFat(vs); const c = vs.reduce((s, v) => s + custo(v), 0);
@@ -2191,7 +2202,7 @@ function dashRenderPrevisoes() {
   const dias30 = [];
   for (let d = 29; d >= 0; d--) {
     const dt = new Date(hoje); dt.setDate(dt.getDate() - d);
-    const dtStr = dt.toISOString().split('T')[0];
+    const dtStr = localDateStr(dt);
     dias30.push(dashFat(todas.filter(v => v.data === dtStr)));
   }
   const mediaDiaria = dias30.reduce((s, v) => s + v, 0) / 30;
@@ -3289,7 +3300,7 @@ function cpEnviarWhatsapp() {
 
 function _pdvRegistrarVendas(formaPagamento, itens) {
   var hoje = new Date();
-  var data = hoje.toISOString().split('T')[0];
+  var data = localDateStr(hoje);
   var hora = hoje.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   var txId = Date.now().toString(36);
 
@@ -3402,7 +3413,7 @@ function crdMigrarAntigo(c, id) {
     parcelas.push({
       numero: i + 1,
       valor: valorParcela,
-      vencimento: vencD.toISOString().split('T')[0],
+      vencimento: localDateStr(vencD),
       status: st,
       dataPagamento: i < pPagas ? (c.dataCompra || '') : null,
       formaPagamento: i < pPagas ? 'Dinheiro' : null,
@@ -3415,7 +3426,7 @@ function crdMigrarAntigo(c, id) {
     numCliente: c.numCliente || '', produtosComprados: c.produtosComprados || '',
     valorTotal: valorTotal, valorEntrada: 0,
     dataCompra: c.dataCompra || '',
-    primeiroVencimento: primVenc.toISOString().split('T')[0],
+    primeiroVencimento: localDateStr(primVenc),
     observacoes: '', parcelas: parcelas, _migrated: true,
   };
 }
@@ -3447,7 +3458,7 @@ function crdSaveAll(arr) {
 
 function crdStatusCliente(cred) {
   var today = new Date(); today.setHours(0,0,0,0);
-  var todayStr = today.toISOString().split('T')[0];
+  var todayStr = localDateStr(today);
   var pendentes = cred.parcelas.filter(function(p) { return p.status !== 'pago' && p.status !== 'cancelado'; });
   if (pendentes.length === 0) return 'quitado';
   if (pendentes.some(function(p) { return new Date(p.vencimento + 'T00:00:00') < today; })) return 'atrasado';
@@ -3503,7 +3514,7 @@ function crdRenderKPIs() {
   if (!el) return;
   var all  = crdGetAll();
   var today = new Date(); today.setHours(0,0,0,0);
-  var todayStr = today.toISOString().split('T')[0];
+  var todayStr = localDateStr(today);
   var mes = today.getMonth(), ano = today.getFullYear();
   var totalReceber=0, emAtraso=0, hojeVal=0, recebidoMes=0;
   var ctAtras=0, ctHoje=0, ctSemana=0;
@@ -3677,8 +3688,8 @@ function abrirFormCrediario() {
   ['crdNome','crdCpf','crdTelefone','crdProdutos','crdObs'].forEach(function(fid) {
     var el = document.getElementById(fid); if (el) el.value = '';
   });
-  var hoje = new Date().toISOString().split('T')[0];
-  var proxMes = new Date(new Date().getFullYear(), new Date().getMonth()+1, 10).toISOString().split('T')[0];
+  var hoje = localDateStr();
+  var proxMes = localDateStr(new Date(new Date().getFullYear(), new Date().getMonth()+1, 10));
   var dc = document.getElementById('crdDataCompra'); if (dc) dc.value = hoje;
   var pv = document.getElementById('crdPrimVenc');  if (pv) pv.value = proxMes;
   var ent = document.getElementById('crdEntrada');  if (ent) ent.value = '0';
@@ -3716,7 +3727,7 @@ function crdCalcPreview() {
     var vd = new Date(base.getFullYear(), base.getMonth() + i, base.getDate());
     rows += '<div class="crd-preview-row"><span style="color:var(--text-muted);font-size:0.72rem;">Parcela ' + (i+1) + '</span>' +
             '<span style="font-weight:600;">' + dashFmt(valorParc) + '</span>' +
-            '<span style="color:var(--text-muted);font-size:0.72rem;">' + crdFmtData(vd.toISOString().split('T')[0]) + '</span></div>';
+            '<span style="color:var(--text-muted);font-size:0.72rem;">' + crdFmtData(localDateStr(vd)) + '</span></div>';
   }
   if (nParc > 12) rows += '<div style="text-align:center;font-size:0.72rem;color:var(--text-muted);padding:6px;">+' + (nParc-12) + ' parcelas...</div>';
   el.innerHTML = rows;
@@ -3746,11 +3757,11 @@ function salvarCrediario() {
   var parcelas  = [];
   for (var i = 0; i < nParc; i++) {
     var vd = new Date(base.getFullYear(), base.getMonth() + i, base.getDate());
-    parcelas.push({ numero:i+1, valor:valorParc, vencimento:vd.toISOString().split('T')[0], status:'pendente', dataPagamento:null, formaPagamento:null });
+    parcelas.push({ numero:i+1, valor:valorParc, vencimento:localDateStr(vd), status:'pendente', dataPagamento:null, formaPagamento:null });
   }
 
   var all = crdGetAll();
-  all.push({ id:'crd_'+Date.now(), nomeCliente:nome, cpfCliente:cpf, numCliente:tel, produtosComprados:prods, valorTotal:total, valorEntrada:entrada, dataCompra:dc||new Date().toISOString().split('T')[0], primeiroVencimento:primV, observacoes:obs, parcelas:parcelas });
+  all.push({ id:'crd_'+Date.now(), nomeCliente:nome, cpfCliente:cpf, numCliente:tel, produtosComprados:prods, valorTotal:total, valorEntrada:entrada, dataCompra:dc||localDateStr(), primeiroVencimento:primV, observacoes:obs, parcelas:parcelas });
   crdSaveAll(all);
 
   // Se veio do PDV (crediário como forma de pagamento), registra as vendas e limpa o carrinho
@@ -3778,7 +3789,7 @@ function abrirClienteDrawer(idx) {
   var valPg   = crdValorPago(c);
   var valAt   = crdValorAtrasado(c);
   var today   = new Date(); today.setHours(0,0,0,0);
-  var todayStr = today.toISOString().split('T')[0];
+  var todayStr = localDateStr(today);
   var inic    = c.nomeCliente.split(' ').slice(0,2).map(function(n){ return n[0]; }).join('').toUpperCase();
 
   var stCfg = {
@@ -3867,7 +3878,7 @@ function crdReceberParcela(cIdx, pIdx) {
   var today = new Date(); today.setHours(0,0,0,0);
 
   c.parcelas[pIdx].status         = 'pago';
-  c.parcelas[pIdx].dataPagamento  = today.toISOString().split('T')[0];
+  c.parcelas[pIdx].dataPagamento  = localDateStr(today);
   c.parcelas[pIdx].formaPagamento = forma;
 
   c.parcelas.forEach(function(p) {
@@ -4206,7 +4217,7 @@ function salvarDespesa() {
     valor:          valor,
     vencimento:     venc,
     status:         st,
-    dataPagamento:  st === 'pago' ? (dtPag || new Date().toISOString().slice(0,10)) : null,
+    dataPagamento:  st === 'pago' ? (dtPag || localDateStr()) : null,
     recorrente:     rec,
     obs:            obs,
     criadoEm:       (idx !== null && todas[idx]) ? todas[idx].criadoEm : new Date().toISOString(),
@@ -4235,7 +4246,7 @@ function despMarcarPago(idx) {
     var todas = despGetAll();
     if (!todas[idx]) return;
     todas[idx].status = 'pago';
-    todas[idx].dataPagamento = new Date().toISOString().slice(0, 10);
+    todas[idx].dataPagamento = localDateStr();
     despSaveAll(todas);
     initDespesas();
     showAlert('Despesa marcada como paga!', 'sucesso');

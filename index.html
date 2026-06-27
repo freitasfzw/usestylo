@@ -180,191 +180,6 @@
     </section>
 
     <!-- ======================== HOME ======================== -->
-    <section id="home">
-
-      <!-- Barra de data e relógio ao vivo -->
-      <div class="home-live-bar">
-        <span id="homeDate" class="home-date"></span>
-        <span class="home-live-pulse"></span>
-        <div class="home-live-right">
-          <span id="homeClock" class="home-clock"></span>
-          <button id="homeToggleVis" class="home-eye-btn" onclick="homeToggleVisibilidade()" title="Mostrar/ocultar valores">
-            <svg id="homeEyeIcon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Dados financeiros (ocultáveis) -->
-      <div id="homeDataWrap">
-
-        <!-- Hero: faturamento de hoje -->
-        <div class="home-hero">
-          <div class="home-hero-eyebrow">HOJE</div>
-          <div class="home-hero-amount">
-            <span class="home-amount-prefix">R$</span>
-            <span id="homeAmount" class="home-amount-value">0,00</span>
-          </div>
-          <div class="home-hero-label">faturado hoje</div>
-        </div>
-
-        <!-- Barra de progresso da meta diária -->
-        <div class="home-progress-wrap">
-          <div class="home-progress-track">
-            <div id="homeProgressFill" class="home-progress-fill" style="width:0%"></div>
-          </div>
-          <div class="home-progress-info">
-            <span id="homeProgressPct" class="home-progress-pct">0,0%</span>
-            <span id="homeProgressMeta" class="home-progress-meta">Meta mensal: —</span>
-          </div>
-        </div>
-
-        <!-- Trio de métricas de apoio -->
-        <div class="home-stat-trio">
-          <div class="home-stat">
-            <span id="homeVendas" class="home-stat-val">0</span>
-            <span class="home-stat-label">vendas hoje</span>
-          </div>
-          <div class="home-stat-sep"></div>
-          <div class="home-stat">
-            <span id="homeLucro" class="home-stat-val">—</span>
-            <span class="home-stat-label">lucro hoje</span>
-          </div>
-        </div>
-
-        <!-- Formas de pagamento de hoje -->
-        <div class="home-formas-hoje" id="homeFormasHoje"></div>
-
-      </div>
-
-      <!-- Ação rápida -->
-      <div class="home-actions-grid">
-        <button class="home-action-card home-action-primary" onclick="mostrarAba('vendas')">
-          <span class="home-action-icon">⊕</span>
-          <div class="home-action-text">
-            <span class="home-action-name">Registrar Venda</span>
-            <span class="home-action-desc">Abrir o ponto de venda</span>
-          </div>
-        </button>
-        <button class="home-action-card" onclick="mostrarAba('estoque'); setTimeout(()=>abrirFormProduto(null),300)">
-          <span class="home-action-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="12 22.08 12 12"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg>
-          </span>
-          <div class="home-action-text">
-            <span class="home-action-name">Adicionar Estoque</span>
-            <span class="home-action-desc">Cadastrar novo produto</span>
-          </div>
-        </button>
-        <button class="home-action-card" onclick="mostrarAba('crediario')">
-          <span class="home-action-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-          </span>
-          <div class="home-action-text">
-            <span class="home-action-name">Crediário</span>
-            <span class="home-action-desc">Gerenciar cobranças</span>
-          </div>
-        </button>
-        <button class="home-action-card" onclick="mostrarAba('estoque')">
-          <span class="home-action-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          </span>
-          <div class="home-action-text">
-            <span class="home-action-name">Ver Estoque</span>
-            <span class="home-action-desc">Consultar produtos</span>
-          </div>
-        </button>
-      </div>
-
-    </section>
-
-    <!-- ======================== DASHBOARD ======================== -->
-    <section id="dashboard">
-      <div class="dash-header-row">
-        <div>
-          <h2>Dashboard Executivo</h2>
-          <span class="dash-subtitle">Visão geral em tempo real</span>
-        </div>
-        <button class="btn-ghost" onclick="atualizarDashboard()">↺ Atualizar</button>
-      </div>
-
-      <div id="dashAlertasBanner"></div>
-
-      <div class="dash-module-label">Faturamento</div>
-      <div class="dash-kpi-row" id="dashKpiFaturamento"></div>
-
-      <div class="dash-module-label">Lucro</div>
-      <div class="dash-kpi-row" id="dashKpiLucro"></div>
-
-      <div class="dash-kpi-row" id="dashKpiOp"></div>
-
-      <div id="dashMetas"></div>
-
-      <div class="dash-module-label">Métricas Financeiras</div>
-      <div class="dash-charts-grid">
-        <div class="dash-chart-panel">
-          <div class="dash-chart-header">
-            <span>Evolução de Vendas</span>
-            <div class="grafico-controls">
-              <button class="grafico-btn" id="dbtn24h" onclick="dashSetGrafico('24h')">24h</button>
-              <button class="grafico-btn" id="dbtn7d" onclick="dashSetGrafico('7d')">7 dias</button>
-              <button class="grafico-btn" id="dbtn30d" onclick="dashSetGrafico('30d')">30 dias</button>
-              <button class="grafico-btn ativo" id="dbtn12m" onclick="dashSetGrafico('12m')">12 meses</button>
-            </div>
-          </div>
-          <canvas id="dashChartLine" style="max-height:220px;"></canvas>
-        </div>
-        <div class="dash-chart-panel">
-          <div class="dash-chart-header"><span>Formas de Pagamento</span></div>
-          <canvas id="dashChartDonut" style="max-height:180px;"></canvas>
-          <div id="dashLegendaFormas"></div>
-        </div>
-      </div>
-
-      <div class="dash-chart-panel dash-chart-full">
-        <div class="dash-chart-header">
-          <span>Receita × Custo × Lucro</span>
-          <div class="grafico-controls">
-            <button class="grafico-btn ativo" id="dfbtnmes" onclick="dashSetFluxo('mes')">6 Meses</button>
-            <button class="grafico-btn" id="dfbtnsemana" onclick="dashSetFluxo('semana')">Semana</button>
-            <button class="grafico-btn" id="dfbtndias" onclick="dashSetFluxo('dias')">14 Dias</button>
-          </div>
-        </div>
-        <canvas id="dashChartFluxo" style="max-height:240px;"></canvas>
-      </div>
-
-      <div class="dash-module-label">Estoque Inteligente</div>
-      <div class="dash-kpi-row" id="dashKpiEstoque"></div>
-      <div class="dash-estoque-indicadores" id="dashEstoqueIndicadores"></div>
-      <div id="dashAlertasEstoque"></div>
-
-      <div class="dash-module-label">Rankings</div>
-      <div class="dash-rankings-grid">
-        <div class="dash-ranking-panel">
-          <div class="dash-chart-header">
-            <span>Top Produtos</span>
-            <div class="grafico-controls">
-              <button class="grafico-btn ativo" id="drbtnh" onclick="dashSetRanking('hoje')">Hoje</button>
-              <button class="grafico-btn" id="drbtnm" onclick="dashSetRanking('mes')">Mês</button>
-              <button class="grafico-btn" id="drbtnans" onclick="dashSetRanking('ano')">Ano</button>
-            </div>
-          </div>
-          <div id="dashRankingList"></div>
-        </div>
-        <div class="dash-ranking-panel">
-          <div class="dash-chart-header"><span>Top Clientes</span></div>
-          <div id="dashClientesList"></div>
-        </div>
-      </div>
-
-      <div class="dash-module-label">Análise de Performance</div>
-      <div class="dash-comparativos-grid" id="dashComparativos"></div>
-
-      <div class="dash-module-label">Previsões com IA <span class="dash-ia-badge">IA</span></div>
-      <div id="dashPrevisoes"></div>
-    </section>
-
     <!-- ======================== ESTOQUE ======================== -->
     <section id="estoque">
       <div class="dash-header-row" style="margin-bottom:16px;">
@@ -806,6 +621,232 @@
     </section>
 
   </div><!-- /.app-wrapper -->
+
+  <!-- ======================== HOME (full-width) ======================== -->
+  <section id="home">
+    <div class="home-layout">
+
+      <!-- Coluna esquerda: ações rápidas -->
+      <div class="home-sidebar home-sidebar-left">
+        <button class="home-action-card" onclick="mostrarAba('estoque'); setTimeout(()=>abrirFormProduto(null),300)">
+          <span class="home-action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="12 22.08 12 12"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg>
+          </span>
+          <div class="home-action-text">
+            <span class="home-action-name">Adicionar Estoque</span>
+            <span class="home-action-desc">Cadastrar novo produto</span>
+          </div>
+        </button>
+        <button class="home-action-card" onclick="mostrarAba('estoque')">
+          <span class="home-action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </span>
+          <div class="home-action-text">
+            <span class="home-action-name">Ver Estoque</span>
+            <span class="home-action-desc">Consultar produtos</span>
+          </div>
+        </button>
+
+        <!-- Alertas de estoque -->
+        <div class="home-estoque-card" id="homeEstoqueCard"></div>
+      </div>
+
+      <!-- Centro: conteúdo principal -->
+      <div class="home-center">
+
+        <!-- Barra de data e relógio ao vivo -->
+        <div class="home-live-bar">
+          <span id="homeDate" class="home-date"></span>
+          <span class="home-live-pulse"></span>
+          <div class="home-live-right">
+            <span id="homeClock" class="home-clock"></span>
+            <button id="homeToggleVis" class="home-eye-btn" onclick="homeToggleVisibilidade()" title="Mostrar/ocultar valores">
+              <svg id="homeEyeIcon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dados financeiros (ocultáveis) -->
+        <div id="homeDataWrap">
+
+          <!-- Hero: faturamento de hoje -->
+          <div class="home-hero">
+            <div class="home-hero-eyebrow">HOJE</div>
+            <div class="home-hero-amount">
+              <span class="home-amount-prefix">R$</span>
+              <span id="homeAmount" class="home-amount-value">0,00</span>
+            </div>
+            <div class="home-hero-label">faturado hoje</div>
+          </div>
+
+          <!-- Barra de progresso da meta diária -->
+          <div class="home-progress-wrap">
+            <div class="home-progress-track">
+              <div id="homeProgressFill" class="home-progress-fill" style="width:0%"></div>
+            </div>
+            <div class="home-progress-info">
+              <span id="homeProgressPct" class="home-progress-pct">0,0%</span>
+              <span id="homeProgressMeta" class="home-progress-meta">Meta mensal: —</span>
+            </div>
+          </div>
+
+          <!-- Trio de métricas de apoio -->
+          <div class="home-stat-trio">
+            <div class="home-stat">
+              <span id="homeVendas" class="home-stat-val">0</span>
+              <span class="home-stat-label">vendas hoje</span>
+            </div>
+            <div class="home-stat-sep"></div>
+            <div class="home-stat">
+              <span id="homeLucro" class="home-stat-val">—</span>
+              <span class="home-stat-label">lucro hoje</span>
+            </div>
+            <div class="home-stat-sep"></div>
+            <div class="home-stat">
+              <span id="homeLucroLiquido" class="home-stat-val">—</span>
+              <span class="home-stat-label">lucro c/ despesas</span>
+              <span id="homeDespesaHoje" class="home-stat-desp">—</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Botão principal -->
+        <button class="home-action-card home-action-primary" onclick="mostrarAba('vendas')">
+          <span class="home-action-icon">⊕</span>
+          <div class="home-action-text">
+            <span class="home-action-name">Registrar Venda</span>
+            <span class="home-action-desc">Abrir o ponto de venda</span>
+          </div>
+        </button>
+
+        <div id="homeAlerts"></div>
+
+      </div>
+
+      <!-- Coluna direita: ações rápidas -->
+      <div class="home-sidebar home-sidebar-right">
+        <button class="home-action-card" onclick="mostrarAba('crediario')">
+          <span class="home-action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </span>
+          <div class="home-action-text">
+            <span class="home-action-name">Crediário</span>
+            <span class="home-action-desc">Gerenciar cobranças</span>
+          </div>
+        </button>
+        <button class="home-action-card" onclick="mostrarAba('despesas'); setTimeout(()=>abrirFormDespesa(null),300)">
+          <span class="home-action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </span>
+          <div class="home-action-text">
+            <span class="home-action-name">Registrar Despesa</span>
+            <span class="home-action-desc">Lançar nova despesa</span>
+          </div>
+        </button>
+
+        <!-- Formas de pagamento de hoje -->
+        <div class="home-formas-card" id="homeFormasCard">
+          <div class="home-formas-card-title">Pagamentos de Hoje</div>
+          <div class="home-formas-hoje" id="homeFormasHoje">
+            <span class="home-formas-vazio">Nenhuma venda hoje</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======================== DASHBOARD (full-width) ======================== -->
+  <section id="dashboard">
+    <div class="dash-inner">
+      <div class="dash-header-row">
+        <div>
+          <h2>Dashboard Executivo</h2>
+          <span class="dash-subtitle">Visão geral em tempo real</span>
+        </div>
+        <button class="btn-ghost" onclick="atualizarDashboard()">↺ Atualizar</button>
+      </div>
+
+      <div id="dashAlertasBanner"></div>
+
+      <div class="dash-module-label">Faturamento</div>
+      <div class="dash-kpi-row" id="dashKpiFaturamento"></div>
+
+      <div class="dash-module-label">Lucro</div>
+      <div class="dash-kpi-row" id="dashKpiLucro"></div>
+
+      <div class="dash-kpi-row" id="dashKpiOp"></div>
+
+      <div id="dashMetas"></div>
+
+      <div class="dash-module-label">Métricas Financeiras</div>
+      <div class="dash-charts-grid">
+        <div class="dash-chart-panel">
+          <div class="dash-chart-header">
+            <span>Evolução de Vendas</span>
+            <div class="grafico-controls">
+              <button class="grafico-btn" id="dbtn24h" onclick="dashSetGrafico('24h')">24h</button>
+              <button class="grafico-btn" id="dbtn7d" onclick="dashSetGrafico('7d')">7 dias</button>
+              <button class="grafico-btn" id="dbtn30d" onclick="dashSetGrafico('30d')">30 dias</button>
+              <button class="grafico-btn ativo" id="dbtn12m" onclick="dashSetGrafico('12m')">12 meses</button>
+            </div>
+          </div>
+          <canvas id="dashChartLine" style="max-height:220px;"></canvas>
+        </div>
+        <div class="dash-chart-panel">
+          <div class="dash-chart-header"><span>Formas de Pagamento</span></div>
+          <canvas id="dashChartDonut" style="max-height:180px;"></canvas>
+          <div id="dashLegendaFormas"></div>
+        </div>
+      </div>
+
+      <div class="dash-chart-panel dash-chart-full">
+        <div class="dash-chart-header">
+          <span>Receita × Custo × Lucro</span>
+          <div class="grafico-controls">
+            <button class="grafico-btn ativo" id="dfbtnmes" onclick="dashSetFluxo('mes')">6 Meses</button>
+            <button class="grafico-btn" id="dfbtnsemana" onclick="dashSetFluxo('semana')">Semana</button>
+            <button class="grafico-btn" id="dfbtndias" onclick="dashSetFluxo('dias')">14 Dias</button>
+          </div>
+        </div>
+        <canvas id="dashChartFluxo" style="max-height:240px;"></canvas>
+      </div>
+
+      <div class="dash-module-label">Estoque Inteligente</div>
+      <div class="dash-kpi-row" id="dashKpiEstoque"></div>
+      <div class="dash-estoque-indicadores" id="dashEstoqueIndicadores"></div>
+      <div id="dashAlertasEstoque"></div>
+
+      <div class="dash-module-label">Rankings</div>
+      <div class="dash-rankings-grid">
+        <div class="dash-ranking-panel">
+          <div class="dash-chart-header">
+            <span>Top Produtos</span>
+            <div class="grafico-controls">
+              <button class="grafico-btn ativo" id="drbtnh" onclick="dashSetRanking('hoje')">Hoje</button>
+              <button class="grafico-btn" id="drbtnm" onclick="dashSetRanking('mes')">Mês</button>
+              <button class="grafico-btn" id="drbtnans" onclick="dashSetRanking('ano')">Ano</button>
+            </div>
+          </div>
+          <div id="dashRankingList"></div>
+        </div>
+        <div class="dash-ranking-panel">
+          <div class="dash-chart-header"><span>Top Clientes</span></div>
+          <div id="dashClientesList"></div>
+        </div>
+      </div>
+
+      <div class="dash-module-label">Análise de Performance</div>
+      <div class="dash-comparativos-grid" id="dashComparativos"></div>
+
+      <div class="dash-module-label">Previsões com IA <span class="dash-ia-badge">IA</span></div>
+      <div id="dashPrevisoes"></div>
+    </div>
+  </section>
 
   <!-- ======= MODAL: LIMPAR ESTOQUE (countdown) ======= -->
   <div id="cfgLimparOverlay" class="alert-overlay" onclick="cfgFecharLimparModal()"></div>

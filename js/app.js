@@ -529,7 +529,7 @@ function initHome() {
 var _homeValoresOcultos = false;
 var _homeValoresReais   = {};
 
-const _HOME_IDS_OCULTAR = ['homeAmount', 'homeLucro', 'homeTicket', 'homeProgressPct', 'homeProgressMeta', 'homeVendas'];
+const _HOME_IDS_OCULTAR = ['homeAmount', 'homeLucro', 'homeLucroLiquido', 'homeDespesaHoje', 'homeTicket', 'homeProgressPct', 'homeProgressMeta', 'homeVendas'];
 
 function homeToggleVisibilidade() {
   _homeValoresOcultos = !_homeValoresOcultos;
@@ -537,6 +537,7 @@ function homeToggleVisibilidade() {
   const icon = document.getElementById('homeEyeIcon');
   const fill = document.getElementById('homeProgressFill');
 
+  const formasCard = document.getElementById('homeFormasCard');
   if (_homeValoresOcultos) {
     // Guarda valores reais e substitui por asteriscos
     _HOME_IDS_OCULTAR.forEach(id => {
@@ -546,6 +547,7 @@ function homeToggleVisibilidade() {
       el.textContent = '* * *';
     });
     if (fill) { _homeValoresReais._fillWidth = fill.style.width; fill.style.width = '0%'; }
+    if (formasCard) formasCard.style.visibility = 'hidden';
     btn.classList.add('oculto');
     icon.innerHTML = `
       <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
@@ -558,6 +560,7 @@ function homeToggleVisibilidade() {
       if (el && _homeValoresReais[id] !== undefined) el.textContent = _homeValoresReais[id];
     });
     if (fill && _homeValoresReais._fillWidth) fill.style.width = _homeValoresReais._fillWidth;
+    if (formasCard) formasCard.style.visibility = '';
     _homeValoresReais = {};
     btn.classList.remove('oculto');
     icon.innerHTML = `
@@ -611,10 +614,20 @@ function atualizarHome() {
   // Hero: anima o número
   _homeAnimateAmount(fat);
 
+  // Despesas do dia (vencimento = hoje)
+  const despHoje = (despGetAll ? despGetAll() : (JSON.parse(localStorage.getItem('despesas')) || []))
+    .filter(d => d.vencimento === hojeStr)
+    .reduce((s, d) => s + (d.valor || 0), 0);
+  const lucroLiquido = luc - despHoje;
+
   // Stats
   const set$ = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const setColor = (id, val) => { const el = document.getElementById(id); if (el) el.style.color = val < 0 ? 'var(--red)' : ''; };
   set$('homeVendas', vendasHoje.length);
   set$('homeLucro',  luc !== 0 ? fmtAbrev(luc) : 'R$ 0,00');
+  set$('homeLucroLiquido', fmtAbrev(lucroLiquido));
+  setColor('homeLucroLiquido', lucroLiquido);
+  set$('homeDespesaHoje', despHoje > 0 ? '− ' + fmtAbrev(despHoje) + ' em despesas' : 'sem despesas hoje');
 
   // Formas de pagamento de hoje
   const mapaFormas = {};
@@ -625,19 +638,22 @@ function atualizarHome() {
   });
   const formasEl = document.getElementById('homeFormasHoje');
   if (formasEl) {
-    const cores = { 'PIX': '#00C48C', 'Dinheiro': '#4CAF50', 'Cartão Crédito': '#2196F3', 'Cartão Débito': '#03A9F4', 'Crediário': '#FF9800' };
-    if (Object.keys(mapaFormas).length === 0) {
-      formasEl.innerHTML = '';
-    } else {
-      formasEl.innerHTML = Object.entries(mapaFormas).map(([forma, val]) => {
-        const cor = cores[forma] || '#D4AF37';
-        return `<div class="home-forma-pill">
-          <span class="home-forma-dot" style="background:${cor}"></span>
-          <span class="home-forma-nome">${forma}</span>
-          <span class="home-forma-val">${fmtAbrev(val)}</span>
-        </div>`;
-      }).join('');
-    }
+    const todasFormas = [
+      { key: 'PIX',           label: 'PIX',           cor: '#00C48C' },
+      { key: 'Dinheiro',      label: 'Dinheiro',      cor: '#4CAF50' },
+      { key: 'Cartao-Credito',label: 'Cartão Crédito',cor: '#2196F3' },
+      { key: 'Cartao-Debito', label: 'Cartão Débito', cor: '#03A9F4' },
+      { key: 'Crediario',     label: 'Crediário',     cor: '#FF9800' },
+    ];
+    formasEl.innerHTML = todasFormas.map(({ key, label, cor }) => {
+      const val = mapaFormas[key] || 0;
+      const vazio = val === 0;
+      return `<div class="home-forma-pill${vazio ? ' home-forma-pill-vazio' : ''}">
+        <span class="home-forma-dot" style="background:${vazio ? 'rgba(255,255,255,0.12)' : cor}"></span>
+        <span class="home-forma-nome">${label}</span>
+        <span class="home-forma-val${vazio ? ' home-forma-val-zero' : ''}">${vazio ? 'R$ 0' : fmtAbrev(val)}</span>
+      </div>`;
+    }).join('');
   }
 
   // Progress da meta diária
@@ -654,19 +670,37 @@ function atualizarHome() {
   // Alertas de estoque
   const zerados = estoque.filter(p => p.quantidade === 0);
   const baixos  = estoque.filter(p => p.quantidade > 0 && p.quantidade <= (p.estoqueMin || 3));
-  const alertsEl = document.getElementById('homeAlerts');
-  if (alertsEl) {
-    let html = '';
-    if (zerados.length) {
-      const nomes = zerados.slice(0, 3).map(p => p.nome).join(', ');
-      const extra = zerados.length > 3 ? ` +${zerados.length - 3}` : '';
-      html += `<div class="home-alert home-alert-error">⚠ Sem estoque: <strong>${nomes}${extra}</strong></div>`;
+  const estoqueCard = document.getElementById('homeEstoqueCard');
+  if (estoqueCard) {
+    if (!zerados.length && !baixos.length) {
+      estoqueCard.innerHTML = '';
+    } else {
+      let html = `<div class="home-formas-card-title">Alertas de Estoque</div>`;
+      zerados.slice(0, 5).forEach(p => {
+        html += `<div class="home-estoque-item home-estoque-zerado">
+          <span class="home-estoque-dot"></span>
+          <span class="home-estoque-nome">${p.nome}</span>
+          <span class="home-estoque-qtd">zerado</span>
+        </div>`;
+      });
+      if (zerados.length > 5) {
+        html += `<div class="home-estoque-extra">+${zerados.length - 5} sem estoque</div>`;
+      }
+      baixos.slice(0, 5).forEach(p => {
+        html += `<div class="home-estoque-item home-estoque-baixo">
+          <span class="home-estoque-dot"></span>
+          <span class="home-estoque-nome">${p.nome}</span>
+          <span class="home-estoque-qtd">${p.quantidade} un.</span>
+        </div>`;
+      });
+      if (baixos.length > 5) {
+        html += `<div class="home-estoque-extra">+${baixos.length - 5} com estoque baixo</div>`;
+      }
+      estoqueCard.innerHTML = html;
     }
-    if (baixos.length) {
-      html += `<div class="home-alert home-alert-warning">↓ ${baixos.length} produto${baixos.length > 1 ? 's' : ''} com estoque baixo</div>`;
-    }
-    alertsEl.innerHTML = html;
   }
+  const alertsEl = document.getElementById('homeAlerts');
+  if (alertsEl) alertsEl.innerHTML = '';
 }
 
 function _homeAnimateAmount(target) {
@@ -1598,6 +1632,25 @@ function dashHojeStr() {
   return localDateStr();
 }
 
+function dashGetDespTotal(tipo) {
+  const todas = JSON.parse(localStorage.getItem('despesas')) || [];
+  const hoje = new Date();
+  const hojeStr = localDateStr(hoje);
+  const mesStr = localMonthStr(hoje);
+  const anoStr = String(hoje.getFullYear());
+  return todas.filter(d => {
+    if (!d.vencimento) return false;
+    const diff = (hoje - new Date(d.vencimento + 'T12:00:00')) / 86400000;
+    switch (tipo) {
+      case 'hoje':   return d.vencimento === hojeStr;
+      case 'semana': return diff >= 0 && diff < 7;
+      case 'mes':    return d.vencimento.startsWith(mesStr);
+      case 'ano':    return d.vencimento.startsWith(anoStr);
+      default: return false;
+    }
+  }).reduce((s, d) => s + (d.valor || 0), 0);
+}
+
 function dashGetVendas(tipo) {
   const todas = JSON.parse(localStorage.getItem('vendas')) || [];
   const hoje = new Date();
@@ -1692,13 +1745,18 @@ function dashRenderKpis() {
   if (elLuc) {
     elLuc.innerHTML = periodos.map((p, i) => {
       const vl = dashGetVendas(p);
-      const val = dashLucroValor(vl);
+      const lucroBase = dashLucroValor(vl);
+      const desp = dashGetDespTotal(p);
+      const val = lucroBase - desp;
       const fat = dashFat(vl);
       const margem = fat > 0 ? (val / fat * 100).toFixed(1) : '0.0';
+      const valDisplay = desp > 0
+        ? `<span class="kpi-lucro-base">${dashFmt(lucroBase)}</span><span class="kpi-lucro-sep">/</span><span class="kpi-lucro-liq ${val >= 0 ? 'positivo' : 'negativo'}">${dashFmt(val)}</span>`
+        : `<span class="${lucroBase >= 0 ? 'positivo' : 'negativo'}">${dashFmt(lucroBase)}</span>`;
       return `<div class="dash-kpi-card ${cores[i]}">
         <div class="dash-kpi-label">Lucro ${labels[i]}</div>
-        <div class="dash-kpi-val ${val >= 0 ? 'positivo' : 'negativo'}">${dashFmt(val)}</div>
-        <div class="dash-kpi-sub">Margem ${margem}%</div>
+        <div class="dash-kpi-val kpi-lucro-split">${valDisplay}</div>
+        <div class="dash-kpi-sub">Margem ${margem}%${desp > 0 ? ` &bull; <span style="color:var(--red);opacity:0.85">− ${dashFmt(desp)} desp.</span>` : ''}</div>
       </div>`;
     }).join('');
   }
@@ -1863,7 +1921,8 @@ function dashRenderGraficoLine(tipo) {
     for (let m = 11; m >= 0; m--) {
       const dt = new Date(hoje); dt.setMonth(dt.getMonth() - m);
       const ms = localMonthStr(dt);
-      labels.push(meses[dt.getMonth()]);
+      const ano2 = String(dt.getFullYear()).slice(-2);
+      labels.push(meses[dt.getMonth()] + '/' + ano2);
       dados.push(dashFat(todas.filter(v => v.data && v.data.startsWith(ms))));
     }
   }
@@ -1957,7 +2016,8 @@ function dashRenderFluxo(tipo) {
     for (let m = 5; m >= 0; m--) {
       const dt = new Date(hoje); dt.setMonth(dt.getMonth() - m);
       const ms = localMonthStr(dt);
-      labels.push(mesesNome[dt.getMonth()]);
+      const ano2 = String(dt.getFullYear()).slice(-2);
+      labels.push(mesesNome[dt.getMonth()] + '/' + ano2);
       const vs = todas.filter(v => v.data && v.data.startsWith(ms));
       const r = dashFat(vs); const c = vs.reduce((s, v) => s + custo(v), 0);
       receitas.push(r); custos.push(c); lucros.push(r - c);

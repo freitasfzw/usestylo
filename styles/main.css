@@ -1864,6 +1864,32 @@ canvas {
 .dash-kpi-val.positivo { color: var(--green); }
 .dash-kpi-val.negativo { color: var(--red); }
 
+.dash-kpi-val.kpi-lucro-split {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.kpi-lucro-base {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.kpi-lucro-sep {
+  color: var(--text-muted);
+  font-size: 0.75em;
+  opacity: 0.5;
+}
+
+.kpi-lucro-liq {
+  font-weight: 800;
+}
+
+.kpi-lucro-liq.positivo { color: var(--green); }
+.kpi-lucro-liq.negativo { color: var(--red); }
+
 .dash-kpi-sub {
   font-size: 0.7rem;
   color: var(--text-muted);
@@ -2284,6 +2310,23 @@ canvas {
 .ruptura-ok      .ruptura-dias { color: var(--green); }
 .ruptura-info    { color: var(--text-muted); white-space: nowrap; font-size: 0.72rem; }
 .ruptura-sugestao { color: var(--purple-light); font-size: 0.72rem; white-space: nowrap; }
+
+/* Dashboard full-width (fora do .app-wrapper) */
+#dashboard {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  padding: 28px 40px 40px;
+  margin-top: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dash-inner {
+  max-width: 1600px;
+  margin: 0 auto;
+}
 
 /* Dashboard Responsive */
 @media (max-width: 1100px) {
@@ -3692,9 +3735,37 @@ section#home {
   background: transparent;
   border: none;
   box-shadow: none;
-  padding: 48px 20px 64px;
-  max-width: 780px;
+  border-radius: 0;
+  padding: 48px 40px 64px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.home-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr 240px;
+  gap: 40px;
+  align-items: start;
+  max-width: 1400px;
   margin: 0 auto;
+}
+
+.home-center {
+  min-width: 0;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.home-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 96px;
+}
+
+.home-sidebar .home-action-card {
+  width: 100%;
 }
 
 /* Barra de data + relógio */
@@ -3711,7 +3782,7 @@ section#home {
 .home-date {
   font-size: 0.78rem;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--gold);
   letter-spacing: 0.3px;
   text-transform: capitalize;
 }
@@ -3735,7 +3806,7 @@ section#home {
 .home-clock {
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--gold);
   letter-spacing: 1px;
   font-variant-numeric: tabular-nums;
 }
@@ -3844,7 +3915,7 @@ section#home {
   align-items: center;
   justify-content: center;
   gap: 0;
-  margin-bottom: 56px;
+  margin-bottom: 20px;
   padding: 28px 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -3882,37 +3953,147 @@ section#home {
   text-align: center;
 }
 
+.home-stat-desp {
+  font-size: 0.6rem;
+  color: var(--red);
+  opacity: 0.7;
+  text-align: center;
+  letter-spacing: 0.2px;
+  margin-top: 1px;
+}
+
 /* Formas de pagamento de hoje — home */
+.home-estoque-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.home-estoque-card:empty {
+  display: none;
+}
+
+.home-estoque-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.home-estoque-item:last-of-type {
+  border-bottom: none;
+}
+
+.home-estoque-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.home-estoque-zerado .home-estoque-dot { background: var(--red); }
+.home-estoque-baixo  .home-estoque-dot { background: #F59E0B; }
+
+.home-estoque-nome {
+  flex: 1;
+  font-size: 0.73rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-estoque-qtd {
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.home-estoque-zerado .home-estoque-qtd { color: var(--red); }
+.home-estoque-baixo  .home-estoque-qtd { color: #F59E0B; }
+
+.home-estoque-extra {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding-top: 2px;
+  opacity: 0.7;
+}
+
+.home-formas-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-top: 4px;
+}
+
+.home-formas-card-title {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
 .home-formas-hoje {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 12px;
+  flex-direction: column;
+  gap: 6px;
 }
+
+.home-formas-vazio {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+  text-align: center;
+  padding: 4px 0;
+}
+
+.home-forma-pill-vazio {
+  opacity: 0.35;
+}
+
+.home-forma-val-zero {
+  color: var(--text-muted) !important;
+  font-weight: 500;
+}
+
 .home-forma-pill {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 20px;
-  padding: 5px 12px;
-  font-size: 0.78rem;
+  gap: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 0.75rem;
 }
+
 .home-forma-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
+
 .home-forma-nome {
   color: var(--text-muted);
   font-weight: 500;
+  flex: 1;
 }
+
 .home-forma-val {
-  color: #fff;
+  color: var(--gold);
   font-weight: 700;
+  font-size: 0.78rem;
 }
 
 /* Quick actions */
@@ -3968,7 +4149,7 @@ section#home {
   background: var(--gold);
   border-color: var(--gold);
   color: #0A0A0A;
-  grid-column: 1 / -1;
+  width: 100%;
 }
 
 .home-action-primary:hover {
@@ -4040,10 +4221,23 @@ section#home {
 }
 
 /* Responsive */
+@media (max-width: 960px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+  }
+  .home-sidebar {
+    padding-top: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .home-sidebar-left { order: 2; }
+  .home-center       { order: 1; }
+  .home-sidebar-right { order: 3; }
+}
+
 @media (max-width: 600px) {
   section#home { padding: 32px 16px 48px; }
-  .home-actions-grid { grid-template-columns: 1fr; }
-  .home-action-primary { grid-column: 1; }
+  .home-sidebar { grid-template-columns: 1fr; }
   .home-hero { margin-bottom: 28px; }
   .home-live-bar { margin-bottom: 36px; }
   .home-stat-trio { margin-bottom: 36px; }

@@ -140,6 +140,14 @@ h1 {
   -webkit-user-select: none;
 }
 
+.brand-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .brand-name {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: clamp(1.6rem, 3.5vw, 2.2rem);
